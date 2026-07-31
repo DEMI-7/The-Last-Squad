@@ -1,4 +1,5 @@
 #include "../include/Arma.h"
+#include "../include/SoundManager.h"
 #include <cmath>
 #include <iostream>
 
@@ -17,7 +18,7 @@ Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcanc
     this->municionMaxima = municionMaxima;
     this->tamanioCargador = tamanioCargador;
 
-    std::string rutaTextura = "assets/" + nombre + ".png";
+    std::string rutaTextura = "assets/armas/" + nombre + ".png";
     this->nombre = nombre;
     cargarTextura(rutaTextura);
 
@@ -27,21 +28,14 @@ Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcanc
     tiempoDesdeUltimoDisparo = 0.f;
     tiempoRecarga = 0.f;
 
-    switch(id) {
-
-        case 0: { //cuchillo
-            municionActual = 0;
-            municionEnCargador = 2;
-            desbloqueada = true;
-            break;
-        }
-
-        default: {
-            municionActual = municionMaxima/2; // Empieza con la mitad de la munición total
-            municionEnCargador = 0;
-            desbloqueada = false;
-            break;
-        }
+    if(id == 0 || id == 5 || id == 7){
+        municionActual = 0;
+        municionEnCargador = 2;
+        desbloqueada = true;
+    } else {
+        municionActual = municionMaxima/2; // Empieza con la mitad de la munición total
+        municionEnCargador = tamanioCargador;
+        desbloqueada = false;
     }
 
 }
@@ -80,37 +74,73 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
         setAngulo(std::atan2(deltaY, deltaX) * -180.f / 3.14159f);
 
         // ----------------- Lógica de disparo
+        if(spawnRayCast){
+            spawnRayCast = false;
+        }
+
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && tiempoDesdeUltimoDisparo >= cadencia && municionEnCargador > 0 && !enRecarga) {
             // el switch es para poder manejar los disparos especiales
             switch(getIdArma()) { 
-
+                
                 case 0: { //cuchillo
-                    proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 500.f, getDanio());
+                    proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
                     municionEnCargador = 2;
+                    SoundManager::play("cuchillo_aire");
                     break;
-
                 }
 
                 case 2:
                 { // Escopeta
                     disparoEscopeta(deltaX, deltaY, proyectiles, texturaProyectil);
+                    SoundManager::play("disparo_escopeta");
                     break;
                 }
 
-                default:
+                case 4: {
+                    //mosin
+                    disparoMosin();
+                    SoundManager::play("rifle");
+                    break;
+                }
+                case 5: {
+                    //arco
+                    proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
+                    municionEnCargador = 2;
+                    SoundManager::play("flecha");
+                    break;
+                }
+                case 6: {
+                    // akimbo revolver
+                    proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
+                    proyectiles.emplace_back(texturaProyectil, sf::Vector2f(getPosicion().x, getPosicion().y-10), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
+                    SoundManager::play("pistola");
+                    break;
+                }
+                case 7: {
+                    // katana
+                    proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
+                    municionEnCargador = 2;
+                    SoundManager::play("cuchillo_aire");
+                    break;
+                }
+                
+                default: //pistola, rifle, fal
                 {
-                    proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio());
+                    proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
+                    if (getNombre() == "rifle" || getNombre() == "fal") {
+                        SoundManager::play("rifle");
+                    } else {
+                        SoundManager::play("pistola");
+                    }
                     break;
                 }
             }
-
-
             std::cout << "Disparando " << getNombre() << ". Munición en cargador antes de disparar: " << municionEnCargador << std::endl;
             municionEnCargador--;
             std::cout << "Munición en cargador después de disparar: " << municionEnCargador << std::endl;
             tiempoDesdeUltimoDisparo = 0.f;
         }
-
+        
         // ----------------- Lógica de recarga
         if (tiempoRecarga >= 1.f) {
             enRecarga = false;
@@ -129,6 +159,17 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
             recargar(cantidad);
             tiempoRecarga = 0.f;
             enRecarga = true;
+
+            // Reproducir sonido de recarga adecuado
+            if (idArma == 2) {
+                SoundManager::play("recargar_scopeta");
+            } else if (idArma == 4 || getNombre() == "rifle" || getNombre() == "fal") {
+                SoundManager::play("recargar_rifle");
+            } else if (idArma == 0 || idArma == 7 || idArma == 5) {
+                // cuchillo/katana/arco no recargan con sonido de arma de fuego
+            } else {
+                SoundManager::play("recargar_pistola");
+            }
 
             std::cout << "Recarga ejecutada con " << getNombre() << ". Munición en restante: " << municionActual << std::endl;
         }
@@ -151,6 +192,13 @@ void Arma::llenarMunicion() {
     municionActual = municionMaxima;
 }
 
+void Arma::comprarMunicion(int cantidad) {
+    municionActual += cantidad;
+    if (municionActual > municionMaxima) {
+        municionActual = municionMaxima;
+    }
+}
+
 // ------------------ Lógica de disparos especiales
 void Arma::disparoEscopeta(float deltaX, float deltaY, std::vector<Proyectil>& proyectiles, sf::Texture& texturaProyectil) {
     const int cantidadPerdigones = 8;
@@ -171,6 +219,10 @@ void Arma::disparoEscopeta(float deltaX, float deltaY, std::vector<Proyectil>& p
 
         objetivo.y = getPosicion().y - std::sin(anguloFinal) * 1000.f;
 
-        proyectiles.emplace_back(texturaProyectil, getPosicion(), objetivo, getAlcance(), 2000.f, getDanio());
+        proyectiles.emplace_back(texturaProyectil, getPosicion(), objetivo, getAlcance(), 2000.f, getDanio(),idArma);
     }
+}
+
+void Arma::disparoMosin() {
+    spawnRayCast = true;
 }

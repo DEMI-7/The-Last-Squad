@@ -1,5 +1,7 @@
 #include "../include/ZombieManager.h"
 #include "../include/Personaje.h"
+#include "../include/Constantes.h"
+#include "../include/SoundManager.h"
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
@@ -9,7 +11,7 @@ ZombieManager::ZombieManager() {
     enPeriodoDescanso = false;
     cronometroDescanso = 0.f;
     temporizadorSpawn = 0.f;
-    zombiesRestantesPorCrear = 5;
+    zombiesRestantesPorCrear = Config::Gameplay::ZombiesIniciales;
     cronometroOleada = 0.f;
     std::cout << "OLEADA Inicio de la Oleada " << oleadaActual << " (Zombies a crear: " << zombiesRestantesPorCrear << ")" << std::endl;
 }
@@ -126,7 +128,7 @@ std::vector<sf::FloatRect> ZombieManager::getHitboxesZombies() const {
 }
 
 // Bucle de actualización principal: controla movimiento, lógica de ataque, colisiones de balas y limpieza de cadáveres
-void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::vector<ObjetoMapa>& obstaculos, std::vector<Proyectil>& proyectiles) {
+void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::vector<ObjetoMapa>& obstaculos, std::vector<Proyectil>& proyectiles, std::vector<Mina>& trampas) {
     
     // Si es el primer frame y no se han seleccionado zonas de spawn, seleccionarlas
     if (indicesZonasActivas.empty() && !zonasSpawn.empty()) {
@@ -136,10 +138,10 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
     // Máquina de estados del gestor de oleadas
     if (enPeriodoDescanso) {
         cronometroDescanso += deltaTime;
-        if (cronometroDescanso >= TIEMPO_DESCANSO) {
+        if (cronometroDescanso >= Config::Gameplay::TiempoDescanso) {
             enPeriodoDescanso = false;
             oleadaActual++;
-            int nuevosZombies = 5 + (oleadaActual - 1) * 3;
+            int nuevosZombies = Config::Gameplay::ZombiesIniciales + (oleadaActual - 1) * Config::Gameplay::ZombiesPorOleadaDificultad;
             zombiesRestantesPorCrear = nuevosZombies;
             zombies.reserve(nuevosZombies + 10);
             
@@ -158,24 +160,24 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
         // Generar zombies de manera paulatina
         if (zombiesRestantesPorCrear > 0) {
             temporizadorSpawn += deltaTime;
-            if (temporizadorSpawn >= FRECUENCIA_SPAWN) {
+            if (temporizadorSpawn >= Config::Gameplay::FrecuenciaSpawn) {
                 intentarSpawnearUnZombie(obstaculos);
                 temporizadorSpawn = 0.f;
             }
         }
 
         // Comprobación de fin de oleada (todos muertos o tiempo límite alcanzado)
-        if ((zombies.empty() && zombiesRestantesPorCrear == 0) || cronometroOleada >= TIEMPO_MAX_OLEADA) {
+        if ((zombies.empty() && zombiesRestantesPorCrear == 0) || cronometroOleada >= Config::Gameplay::TiempoMaxOleada) {
             enPeriodoDescanso = true;
             cronometroDescanso = 0.f;
             cronometroOleada = 0.f;
-            std::cout << "TREGUA Oleada finalizada/tiempo limite alcanzado. Comenzando tregua de " << TIEMPO_DESCANSO << " segundos." << std::endl;
+            std::cout << "TREGUA Oleada finalizada/tiempo limite alcanzado. Comenzando tregua de " << Config::Gameplay::TiempoDescanso << " segundos." << std::endl;
         }
     }
 
     // 1. Actualizar movimiento y logica de evasión/persecución para cada zombie
     for (auto &zombie : zombies) {
-        zombie.actualizar(deltaTime, jugador.estaVivo() ? jugador.getHitbox() : sf::FloatRect(), obstaculos, zombies);
+        zombie.actualizar(deltaTime, jugador, obstaculos, zombies);
     }
 
     // 2. Procesar colisiones de Proyectiles (Balas) contra los Zombies
@@ -184,6 +186,12 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
             if (!zombie.muerto() && proyectil.getHitbox().intersects(zombie.getHitbox())) {
                 zombie.quitarVida(proyectil.getDanio());
                 proyectil.desactivar(); // Marcar el proyectil para ser destruido
+                
+                // Si es un cuchillo (0) o katana (7), reproducir sonido de impacto
+                if (proyectil.getIdArmaOrigen() == 0 || proyectil.getIdArmaOrigen() == 7) {
+                    SoundManager::play("cuchillo_impacto");
+                }
+
                 std::cout << "IMPACTO Zombie recibio " << proyectil.getDanio() 
                           << " de danio. Vida restante: " << zombie.getVida() << std::endl;
                 
@@ -197,7 +205,7 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
 
     // 3. Procesar colisiones de Zombies contra el Jugador (Ataque y daño al jugador)
     for (auto &zombie : zombies) {
-        if (!zombie.muerto() && jugador.estaVivo()) {
+        if (!zombie.muerto() && jugador.estaVivo() && !jugador.esInvulnerable()) {
             // Expandimos la hitbox del jugador ligeramente para dar tolerancia al área de contacto
             sf::FloatRect expandedHitbox = jugador.getHitbox();
             expandedHitbox.left -= 2.f;
@@ -220,8 +228,35 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
         }
     }
 
+    for (auto &zombie : zombies) {
+        if (zombie.muerto() && jugador.estaVivo()) {
+            jugador.sumarDinero(100);
+        }
+    }
+
     // 4. Limpieza: Elimina del vector a todos los zombies marcados como muertos para liberar memoria
+    for (const auto &z : zombies) {
+        if (z.muerto()) {
+            zombiesEliminados++;
+        }
+    }
     zombies.erase(std::remove_if(zombies.begin(), zombies.end(), [](const Zombie &z) { return z.muerto(); }), zombies.end());
+
+
+    bool exploto = false;
+
+    for (auto &trampa : trampas) {
+        for (auto &zombie : zombies) {
+            if (trampa.getHitbox().intersects(zombie.getHitbox()) && trampa.getExplosion() == true) {
+                zombie.quitarVida(trampa.getDanio());
+                exploto = true;
+            }
+        }
+        if (exploto) {
+            trampa.explotar();
+        }
+
+    }
 }
 
 // Dibuja en pantalla todos los zombies gestionados
@@ -230,3 +265,15 @@ void ZombieManager::dibujarZombies(sf::RenderWindow& ventana) {
         zombie.dibujar(ventana);
     }
 }
+
+void ZombieManager::cargarOleada(int oleada) {
+    oleadaActual = oleada;
+    enPeriodoDescanso = false;
+    cronometroDescanso = 0.f;
+    temporizadorSpawn = 0.f;
+    zombiesRestantesPorCrear = Config::Gameplay::ZombiesIniciales + (oleadaActual - 1) * Config::Gameplay::ZombiesPorOleadaDificultad;
+    cronometroOleada = 0.f;
+    zombies.clear();
+    indicesZonasActivas.clear();
+}
+

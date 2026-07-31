@@ -4,6 +4,7 @@
 #include "Zombie.h"
 #include "ObjetoMapa.h"
 #include "Proyectil.h"
+#include "Constantes.h"
 
 class Personaje;
 
@@ -21,9 +22,7 @@ private:
     int zombiesRestantesPorCrear;
     float cronometroOleada;
 
-    const float TIEMPO_DESCANSO = 10.f;    // Los 10 segundos de la consigna
-    const float TIEMPO_MAX_OLEADA = 90.f;  // Tiempo límite para forzar la ronda
-    const float FRECUENCIA_SPAWN = 0.5f;   
+
 
     void seleccionarZonaSpawnOptima(const sf::Vector2f& posJugador);
     void intentarSpawnearUnZombie(const std::vector<ObjetoMapa>& obstaculos);
@@ -33,10 +32,24 @@ public:
 
     void inicializarZonasSpawn(const std::vector<sf::FloatRect>& zonas);
 
-    void actualizar(float deltaTime, Personaje& jugador, const std::vector<ObjetoMapa>& obstaculos, std::vector<Proyectil>& proyectiles);
+    void actualizar(float deltaTime, Personaje& jugador, const std::vector<ObjetoMapa>& obstaculos, std::vector<Proyectil>& proyectiles, std::vector<Mina>& trampas);
 
     void dibujarZombies(sf::RenderWindow& ventana);
 
     std::vector<sf::FloatRect> getHitboxesZombies() const;
-    const std::vector<Zombie>& getZombies() const { return zombies; }
+
+    int getOleadaActual() const { return oleadaActual; }
+    void cargarOleada(int oleada);
+    bool getEnPeriodoDescanso() const { return enPeriodoDescanso; }
+    float getCronometroDescanso() const { return cronometroDescanso; }
+    float getTiempoTotalDescanso() const { return Config::Gameplay::TiempoDescanso; }
+    int getZombiesActivos() const { return zombies.size(); }
+    int getZombiesRestantesPorCrear() const { return zombiesRestantesPorCrear; }
+    std::vector<Zombie>& getZombies() { return zombies; }
+    
+    int getZombiesEliminados() const { return zombiesEliminados; }
+    void resetZombiesEliminados() { zombiesEliminados = 0; }
+
+private:
+    int zombiesEliminados = 0;
 };

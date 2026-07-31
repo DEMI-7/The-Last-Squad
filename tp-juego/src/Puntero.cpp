@@ -2,19 +2,19 @@
 
 Puntero::Puntero() : ObjetoGrafico() {
     // 1. Cargar la imagen del asset desde el archivo
-    cargarTextura("assets/mira.png");
+    cargarTextura("assets/varios/mira.png");
     centrarOrigen(); // Centrar el origen para la rotación
 
     // Ocultar la hitbox de depuración para que no dibuje un recuadro rojo alrededor de la mira
     mostrarHitbox = false;
 }
 
-void Puntero::actualizar(sf::RenderWindow& ventana, float deltaTime) {
+void Puntero::actualizar(sf::RenderWindow& ventana, const sf::View& vista, float deltaTime) {
     // 1. Obtener la posición del cursor en píxeles
     sf::Vector2i posMouse = sf::Mouse::getPosition(ventana);
 
-    // 2. Traducir a coordenadas del mundo del juego
-    sf::Vector2f posMundo = ventana.mapPixelToCoords(posMouse);
+    // 2. Traducir a coordenadas del mundo del juego usando la vista especificada
+    sf::Vector2f posMundo = ventana.mapPixelToCoords(posMouse, vista);
 
     // 3. Colocar el centro de la mira en el cursor
     setPosicionCentrado(posMundo.x, posMundo.y);

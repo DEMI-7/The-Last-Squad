@@ -1,4 +1,5 @@
 #include "../include/Personaje.h"
+#include "../include/SoundManager.h"
 #include <cmath>
 
 Personaje::Personaje(){
@@ -22,6 +23,7 @@ Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida,
     armaduraMax = armadura;
     armaduraActual = armadura;
     this->velocidad = velocidad;
+    velocidadNormal = velocidad;
     if (this->velocidad <= 0.f) this->velocidad = 200.f;
     this->cooldownHabilidad = cooldownHabilidad;
     habilidad = "-";
@@ -30,13 +32,23 @@ Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida,
     tiempoHabilidad = 0;
     habilidadDisponible = true;
     multiplicadorZoom = 1.f;
+    dinero = 0;
 
     mostrarHitbox = false;
-    if (!cargarTextura("assets/" + nombre + ".png")) {
+    if (!cargarTextura("assets/personajes/" + nombre + ".png")) {
         cargarTextura("assets/jugador.png");
     }
     escalarSprite(0.8f,0.8f);
-    //setearTamanioSprite(39, 48);
+    
+    // Si la textura cargada es la original de 6 frames, recortamos 39x48.
+    // De lo contrario (ej. Recon/Joel que son una sola imagen), usamos el tamaño completo de la textura.
+    sf::Vector2u sizeTextura = textura.getSize();
+    if (sizeTextura.x == 234 && sizeTextura.y == 48) {
+        setearTamanioSprite(39, 48);
+    } else {
+        setearTamanioSprite(sizeTextura.x, sizeTextura.y);
+    }
+    
     centrarOrigen();
 
     setHitbox(13.f * 2.f, 16.f * 2.1f);
@@ -53,9 +65,14 @@ Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida,
     archivo.entregarArma(inventarioArmas, idArmaEspecial);
 
     inventarioArmas[0].setDesbloqueo(true);
+    /*
     inventarioArmas[1].setDesbloqueo(true);
     inventarioArmas[2].setDesbloqueo(true);
     inventarioArmas[3].setDesbloqueo(true);
+    inventarioArmas[4].setDesbloqueo(true);
+    */
+
+    zonaHabilidad = sf::FloatRect(0 , 0, 0, 0);
 }
 
 void Personaje::guardarPosicionAnterior() { posicionAnterior = getPosicion(); }
@@ -68,29 +85,30 @@ void Personaje::volverPosicionAnteriorY() {
   setPosicionCentrado(getPosicion().x, posicionAnterior.y);
 }
 
-void Personaje::actualizar(float deltaTime, const std::vector<ObjetoMapa>& obstaculos, const std::vector<sf::FloatRect>& obstaculosAdicionales) {
+void Personaje::actualizar(float deltaTime, const std::vector<ObjetoMapa>& obstaculos, const std::vector<sf::FloatRect> &hitboxZombies, const sf::Vector2f &posicionMouse, std::vector<Mina> &trampas, const sf::Vector2f &limMapa) {
     // logica adicional para el personaje, como animaciones o habilidades
+    
     movimientoX = 0.f;
     movimientoY = 0.f;
-
+    
     float movimiento = velocidad * deltaTime;
-
+    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         movimientoX -= movimiento;
     }
-
+    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         movimientoX += movimiento;
     }
-
+    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         movimientoY -= movimiento;
     }
-
+    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
         movimientoY += movimiento;
     }
-
+    
     // movimiento horizontal jugador, chequeo de colisiones mediante bucle for
     guardarPosicionAnterior();
     mover(getMovimientoX(), 0.f);
@@ -103,14 +121,20 @@ void Personaje::actualizar(float deltaTime, const std::vector<ObjetoMapa>& obsta
         }
     }
     if (!colisionoX) {
-        for(const auto& rect : obstaculosAdicionales) {
-            if (getHitbox().intersects(rect)) {
+        for(const auto& rect : hitboxZombies) {
+            if (getHitbox().intersects(rect) && !esInvulnerable()) {
                 volverPosicionAnteriorX();
+                colisionoX = true;
                 break;
             }
         }
     }
-
+    if (!colisionoX) {
+        if (getHitbox().left < 0.f || getHitbox().left + getHitbox().width > limMapa.x) {
+            volverPosicionAnteriorX();
+        }
+    }
+    
     // movimiento vertical jugador
     guardarPosicionAnterior();
     mover(0.f, getMovimientoY());
@@ -123,37 +147,80 @@ void Personaje::actualizar(float deltaTime, const std::vector<ObjetoMapa>& obsta
         }
     }
     if (!colisionoY) {
-        for(const auto& rect : obstaculosAdicionales) {
-            if (getHitbox().intersects(rect)) {
+        for(const auto& rect : hitboxZombies) {
+            if (getHitbox().intersects(rect) && !esInvulnerable()) {
                 volverPosicionAnteriorY();
+                colisionoY = true;
                 break;
             }
         }
     }
-
+    if (!colisionoY) {
+        if (getHitbox().top < 0.f || getHitbox().top + getHitbox().height > limMapa.y) {
+            volverPosicionAnteriorY();
+        }
+    }
+    
     elegirArma();
 
+    calcularDireccion(posicionMouse);
+
+    actualizarZonaHabilidad();
+    
     tiempoHabilidad += deltaTime;
+    activarHabilidad(deltaTime, trampas);
 
-    activarHabilidad(deltaTime);
+    desbloqueoArmas();
 }
 
-float Personaje::getMovimientoX() const { return movimientoX; }
-
-float Personaje::getMovimientoY() const { return movimientoY; }
-
-// devuelve el arma así se actualiza en la clase juego
-Arma& Personaje::getArma() {
-    return inventarioArmas[armaEquipada];
+void Personaje::actualizarZonaHabilidad(){
+    //zona habilidad
+    switch (direccion){
+        case 1: {
+            //izquierda
+            zonaHabilidad = sf::FloatRect(getPosicion().x - 75.f, getPosicion().y - 50.f, 50, 100);
+            break;
+        }
+        case 2: {
+            //arriba
+            zonaHabilidad = sf::FloatRect(getPosicion().x - 50.f, getPosicion().y - 75.f, 100, 50);
+            break;
+        }
+        case 3: {
+            //derecha
+            zonaHabilidad = sf::FloatRect(getPosicion().x + 25.f, getPosicion().y - 50.f, 50, 100);
+            break;
+        }
+        case 4: {
+            //abajo
+            zonaHabilidad = sf::FloatRect(getPosicion().x - 50.f, getPosicion().y + 25.f, 100, 50);
+            break;
+        }
+    }
 }
 
-void Personaje::setVelocidad(float velocidad){
-    this->velocidad = velocidad;
+void Personaje::calcularDireccion(sf::Vector2f posicionMouse) {
+    float dx = posicionMouse.x - getPosicion().x;
+    float dy = posicionMouse.y - getPosicion().y;
+    
+    if (std::abs(dx) > std::abs(dy)) {
+        if(dx > 0) {
+            direccion = 3; // derecha
+        }
+        else {
+            direccion = 1;  // izquierda
+        }
+    }
+    else {
+        if(dy > 0) {
+            direccion = 4; // abajo
+        }
+        else {
+            direccion = 2;  // arriba
+        }
+    }
 }
 
-float Personaje::getMultiplicadorZoom(){
-    return multiplicadorZoom;
-}
 
 void Personaje::elegirArma() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
@@ -173,12 +240,33 @@ void Personaje::elegirArma() {
     }
 }
 
-void Personaje::activarHabilidad(float deltaTime){
+void Personaje::recibirDanio(float cantidad) {
+    if (armaduraActual > 0) {
+        float absorcion = cantidad * 0.5f;
+        if (armaduraActual >= absorcion) {
+            armaduraActual -= absorcion;
+            vidaActual -= (cantidad - absorcion);
+        } else {
+            float remanente = absorcion - armaduraActual;
+            armaduraActual = 0;
+            vidaActual -= (cantidad - absorcion + remanente);
+        }
+    } else {
+        vidaActual -= cantidad;
+    }
+    
+    if (vidaActual < 0) {
+        vidaActual = 0;
+    }
+}
+
+// --------------------- HABILIDADES -------------------
+void Personaje::activarHabilidad(float deltaTime, std::vector<Mina> &trampas){
     
     if (tiempoHabilidad >= cooldownHabilidad && habilidadActivada == false){
         habilidadDisponible = true;
     }
-
+    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && habilidadDisponible == true && habilidadActivada == false){
         habilidadActivada = true;
         tiempoHabilidad = 0;
@@ -187,25 +275,94 @@ void Personaje::activarHabilidad(float deltaTime){
     }
     
     switch (idPersonaje) {
-
+        
         case 0: {
             habilidadRecon(deltaTime);
             break;
         }
+        case 1: {
+            habilidadJoel();
+            break;
+        }
+        case 2: {
+            habilidadGhost();
+            break;
+        }
+        case 3: {
+            habilidadJohnWick();
+            break;
+        }
+        case 4: {
+            habilidadSoldado(trampas);
+            break;
+        }
+    }
+}
 
+void Personaje::habilidadSoldado(std::vector<Mina> &trampas) {
+    if (habilidadActivada){
+        trampas.emplace_back(getPosicion());
+        SoundManager::play("colocar_bomba");
+        habilidadActivada = false;
+        tiempoHabilidad = 0;
+    }
+}
+
+void Personaje::habilidadJohnWick() {
+    if (habilidadActivada) {
+
+        if (velocidad == velocidadNormal) {
+            setVelocidad(getVelocidad()*2.5f);
+            invulnerabilidad = true;
+        }
+
+        if (tiempoHabilidad >= 0.35f) {
+            habilidadActivada = false;
+            setVelocidad(velocidadNormal);
+            invulnerabilidad = false;
+            tiempoHabilidad = 0;
+        }
+    }
+}
+
+void Personaje::habilidadGhost() {
+    if(habilidadActivada) {
+        if(velocidad == velocidadNormal){
+            setVelocidad(getVelocidad()*2);
+        }
+        if (tiempoHabilidad >= 4) {
+            habilidadActivada = false;
+            setVelocidad(velocidadNormal);
+            tiempoHabilidad = 0;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && tiempoHabilidad > 1){
+            habilidadActivada = false;
+            setVelocidad(velocidadNormal);
+            tiempoHabilidad = 0;
+        }
+    }
+}
+
+void Personaje::habilidadJoel(){
+    if (habilidadActivada){
+        if(tiempoHabilidad >= 0.1f){
+            std::cout << "habilidad desactivada" << std:: endl;
+            habilidadActivada = false;
+            tiempoHabilidad = 0;
+        }
     }
 }
 
 void Personaje::habilidadRecon(float deltaTime) {
-
-    if(habilidadActivada) {
     
+    if(habilidadActivada) {
+        
         setVelocidad(0);
-
+        
         if(multiplicadorZoom < 2.f){
             multiplicadorZoom += deltaTime;
         }
-
+        
         if (tiempoHabilidad >= 10){
             std::cout << "habilidad desactivada" << std:: endl;
             habilidadActivada = false;
@@ -227,22 +384,61 @@ void Personaje::habilidadRecon(float deltaTime) {
     }
 }
 
-void Personaje::recibirDanio(float cantidad) {
-    if (armaduraActual > 0) {
-        float absorcion = cantidad * 0.5f;
-        if (armaduraActual >= absorcion) {
-            armaduraActual -= absorcion;
-            vidaActual -= (cantidad - absorcion);
-        } else {
-            float remanente = absorcion - armaduraActual;
-            armaduraActual = 0;
-            vidaActual -= (cantidad - absorcion + remanente);
-        }
-    } else {
-        vidaActual -= cantidad;
-    }
+// --------------- GETTERS SETTERS ----------------
+float Personaje::getMovimientoX() const { return movimientoX; }
 
-    if (vidaActual < 0) {
-        vidaActual = 0;
+float Personaje::getMovimientoY() const { return movimientoY; }
+
+// devuelve el arma así se actualiza en la clase juego
+Arma& Personaje::getArma() {
+    return inventarioArmas[armaEquipada];
+}
+
+void Personaje::setVelocidad(float velocidad){
+    this->velocidad = velocidad;
+}
+
+float Personaje::getMultiplicadorZoom(){
+    return multiplicadorZoom;
+}
+
+sf::FloatRect Personaje::getZonaHabilidad() const{
+    return zonaHabilidad;
+}
+
+bool Personaje::habilidadActiva() const{
+    return habilidadActivada;
+}
+
+int Personaje::getDireccion() const{
+    return direccion;
+}
+
+void Personaje::sumarDinero(int dinero){
+    this->dinero += dinero;
+}
+
+// -------- desbloqueo de armas --------
+
+void Personaje::desbloqueoArmas() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) && !inventarioArmas[1].estaDisponible() && inventarioArmas[1].getCosto() <= dinero) {
+        inventarioArmas[1].setDesbloqueo(true);
+        dinero -= inventarioArmas[1].getCosto();
+        armaEquipada = 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3) && !inventarioArmas[2].estaDisponible() && inventarioArmas[2].getCosto() <= dinero) {
+        inventarioArmas[2].setDesbloqueo(true);
+        dinero -= inventarioArmas[2].getCosto();
+        armaEquipada = 2;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4) && !inventarioArmas[3].estaDisponible() && inventarioArmas[3].getCosto() <= dinero) {
+        inventarioArmas[3].setDesbloqueo(true);
+        dinero -= inventarioArmas[3].getCosto();
+        armaEquipada = 3;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5) && !inventarioArmas[4].estaDisponible() && inventarioArmas[4].getCosto() <= dinero) {
+        inventarioArmas[4].setDesbloqueo(true);
+        dinero -= inventarioArmas[4].getCosto();
+        armaEquipada = 4;
     }
 }

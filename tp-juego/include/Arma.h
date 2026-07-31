@@ -23,10 +23,12 @@ private:
     int municionActual;
     int municionEnCargador;
     bool desbloqueada;
-
+    
     void disparoEscopeta(float deltaX, float deltaY, std::vector<Proyectil>& proyectiles, sf::Texture& texturaProyectil);
-
-public:
+    void disparoMosin();
+    
+    public:
+    bool spawnRayCast;
     Arma();
     Arma(int id, std::string nombre, float cadencia, float danio, float alcance, float costo, int municionMaxima, int tamanioCargador);
 
@@ -38,11 +40,12 @@ public:
     std::string getNombre() const;
     float getDanio() const;
     float getAlcance() const;
-    float getCosto() const;
+    float getCosto() const {return costo;};
 
     void setDesbloqueo(bool estado);
     void llenarMunicion();
     void recargar(int cantidad);
+    void comprarMunicion(int cantidad);
 
     int getMunicionActual() const { return municionActual; }
     int getMunicionEnCargador() const { return municionEnCargador; }

@@ -8,6 +8,8 @@ protected:
     float vidaMax;
     float vidaActual;
     float velocidad;
+    float velocidadNormal;
+    int direccion; // 1.izq 2.arriba 3.der 4.abajo
 
 public:
 
@@ -17,6 +19,7 @@ public:
     bool estaVivo() const;
 
     float getVidaActual() const { return vidaActual; }
+    void setVidaActual(float v) { vidaActual = v; }
     float getVidaMax() const { return vidaMax; }
     float getVelocidad() const { return velocidad; }
 };

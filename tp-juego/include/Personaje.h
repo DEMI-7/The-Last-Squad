@@ -6,10 +6,12 @@
 #include "ObjetoMapa.h"
 #include "Proyectil.h"
 #include "archivoArma.h"
+#include "Mina.h"
 
 
 class Personaje : public Entidad {
 private:
+    // ------ VARIABLES ------
     int idPersonaje;
     std::string nombre;
     float armaduraMax;
@@ -30,15 +32,17 @@ private:
     bool habilidadActivada;
     bool habilidadDisponible;
     float multiplicadorZoom;
+    
+    sf::FloatRect zonaHabilidad;
+    bool dashActivado;
+    bool invulnerabilidad = false;
 
+    int dinero;
+    
+    // ----- FUNCIONES PRIVADAS -----
+    void actualizarZonaHabilidad();
 
-public:
-
-    Personaje();
-
-    Personaje(int id, int idArmaEspecial, std::string nombre, float vida, float armadura, float velocidad, float cooldownHabilidad);
-
-    virtual void actualizar(float deltaTime, const std::vector<ObjetoMapa>& obstaculos, const std::vector<sf::FloatRect>& obstaculosAdicionales = {});
+    void calcularDireccion(sf::Vector2f posicionMouse);
 
     void guardarPosicionAnterior();
 
@@ -52,20 +56,58 @@ public:
 
     float getMovimientoY() const;
 
-    Arma& getArma();
-
     void setVelocidad(float velocidad);
 
     void elegirArma();
-  
-    void activarHabilidad(float deltaTime);
+    
+    void activarHabilidad(float deltaTime, std::vector<Mina> &trampas);
 
     void habilidadRecon(float deltaTime);
 
+    void habilidadJoel();
+
+    void habilidadGhost();
+
+    void habilidadJohnWick();
+
+    void habilidadSoldado(std::vector<Mina> &trampas);
+
+    void desbloqueoArmas();
+    
+    public:
+    // ------ FUNCIONES PUBLICAS ------
+    Personaje();
+    
+    Personaje(int id, int idArmaEspecial, std::string nombre, float vida, float armadura, float velocidad, float cooldownHabilidad);
+    
+    virtual void actualizar(float deltaTime, const std::vector<ObjetoMapa>& obstaculos, const std::vector<sf::FloatRect>& hitboxZombies, const sf::Vector2f &posicionMouse, std::vector<Mina> &trampas, const sf::Vector2f &limMapa);
+    
+    Arma& getArma();
+    
     float getMultiplicadorZoom();
-
+    
     float getArmaduraActual() const { return armaduraActual; }
+    void setArmaduraActual(float a) { armaduraActual = a; }
+    
     float getArmaduraMax() const { return armaduraMax; }
+    void setArmaEquipada(int index) { if(index >= 0 && index < 5) armaEquipada = index; }
+    
+    sf::FloatRect getZonaHabilidad() const;
 
+    int getDireccion() const;
+
+    bool habilidadActiva() const;
+    float getTiempoHabilidad() const { return tiempoHabilidad; }
+    float getCooldownHabilidad() const { return cooldownHabilidad; }
+    bool getHabilidadDisponible() const { return habilidadDisponible; }
+    
     void recibirDanio(float cantidad) override;
+
+    int getId()const{ return idPersonaje;}
+
+    bool esInvulnerable() const {return invulnerabilidad;}
+
+    int getDinero() const {return dinero;}
+
+    void sumarDinero(int dinero);
 };
