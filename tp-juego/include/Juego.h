@@ -101,7 +101,13 @@ private:
       RegistroPersonaje registro;
       sf::Texture textura;
       sf::Sprite sprite;
+
+      BotonPersonaje(Boton botonBase, sf::Texture texturaBase, RegistroPersonaje registroBase) : sprite(texturaBase), boton(botonBase) {
+
+      }
   };
+  
+
   std::vector<BotonPersonaje> botonesPersonajes;
   Boton btnVolverSeleccion;
   

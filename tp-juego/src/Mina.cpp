@@ -38,7 +38,7 @@ void Mina::actualizar(float deltaTime, const std::vector<sf::FloatRect> &listaZo
         }
         
         for (const auto &hitboxZombie : listaZombies) {
-            if (hitbox.intersects(hitboxZombie) && !activa) {
+            if (hitbox.findIntersection(hitboxZombie) && !activa) {
                 velocidadAnimacion = 0.1f;
                 temporizador = 0;
                 activa = true;

@@ -49,46 +49,43 @@ bool ObjetoGrafico::cargarTextura(const std::string& ruta)
 
 void ObjetoGrafico::setPosicionCentrado(float x, float y)
 {
-    sprite.setPosition(x, y);
+    sprite.setPosition({x, y});
 
-    hitbox.left = x - hitbox.width / 2.f;
-    hitbox.top = y - hitbox.height / 2.f;
+    hitbox.position.x = x - hitbox.size.x / 2.f;
+    hitbox.position.y = y - hitbox.size.y / 2.f;
 
-    hitboxDebug.setPosition(hitbox.left, hitbox.top);
+    hitboxDebug.setPosition({hitbox.position.x, hitbox.position.y});
 }
 
 void ObjetoGrafico::setPosicion(float x, float y)
 {
-    sprite.setPosition(x, y);
+    sprite.setPosition({x, y});
 
-    hitbox.left = x;
-    hitbox.top = y;
+    hitbox.position.x = x;
+    hitbox.position.y = y;
 
-    hitboxDebug.setPosition(hitbox.left, hitbox.top);
+    hitboxDebug.setPosition({hitbox.position.x, hitbox.position.y});
 }
 
 void ObjetoGrafico::mover(float offsetX, float offsetY)
 {
-    sprite.move(offsetX, offsetY);
+    sprite.move({offsetX, offsetY});
 
-    hitbox.left += offsetX;
-    hitbox.top += offsetY;
+    hitbox.position.x += offsetX;
+    hitbox.position.y += offsetY;
 
-    hitboxDebug.move(offsetX, offsetY);
+    hitboxDebug.move({offsetX, offsetY});
 }
 
 void ObjetoGrafico::centrarOrigen()
 {
     sf::FloatRect bounds = sprite.getLocalBounds();
 
-    sprite.setOrigin(
-        bounds.width / 2.f,
-        bounds.height / 2.f
-    );
+    sprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
 }
 
 void ObjetoGrafico::setearTamanioSprite(int ancho, int alto) {
-    sprite.setTextureRect(sf::IntRect(0, 0, ancho, alto));
+    sprite.setTextureRect(sf::IntRect({0, 0}, {ancho, alto}));
     altoSprite = alto;
     anchoSprite = ancho;
 }
@@ -100,17 +97,17 @@ void ObjetoGrafico::siguienteSprite(){
         frameActual = 0;
     }
 
-    sprite.setTextureRect(sf::IntRect(frameActual*anchoSprite, animacionActual * altoSprite, anchoSprite, altoSprite));
+    sprite.setTextureRect(sf::IntRect({frameActual*anchoSprite, animacionActual * altoSprite}, {anchoSprite, altoSprite}));
 }
 
 void ObjetoGrafico::anteriorSprite(){
     frameActual = (frameActual - 1 + cantidadFrames) % cantidadFrames;
 
-    sprite.setTextureRect(sf::IntRect(frameActual*anchoSprite, animacionActual * altoSprite, anchoSprite, altoSprite));
+    sprite.setTextureRect(sf::IntRect({frameActual*anchoSprite, animacionActual * altoSprite}, {anchoSprite, altoSprite}));
 }
 
 void ObjetoGrafico::escalarSprite(float factorX, float factorY){
-    sprite.setScale(factorX, factorY);
+    sprite.setScale({factorX, factorY});
 }
 
 void ObjetoGrafico::actualizar(float deltaTime)
@@ -139,14 +136,14 @@ float ObjetoGrafico::getAngulo() const{
 
 void ObjetoGrafico::setAngulo(float nuevoAngulo){
     angulo = nuevoAngulo;
-    sprite.setRotation(angulo);
+    sprite.setRotation(sf::degrees(angulo));
 }
 
 
 void ObjetoGrafico::setHitbox(float ancho, float alto)
 {
-    hitbox.width = ancho;
-    hitbox.height = alto;
+    hitbox.size.x = ancho;
+    hitbox.size.y = alto;
 
     hitboxDebug.setSize(sf::Vector2f(ancho, alto));
 }

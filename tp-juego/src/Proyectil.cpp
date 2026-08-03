@@ -51,7 +51,7 @@ void Proyectil::actualizar(float deltaTime,const std::vector<ObjetoMapa>& obstac
 
     // deteccion de obstaculos
     for(auto& obstaculo : obstaculos) {
-        if (getHitbox().intersects(obstaculo.getHitbox())) {
+        if (getHitbox().findIntersection(obstaculo.getHitbox())) {
             estadoActivo = false;
             break;
         }

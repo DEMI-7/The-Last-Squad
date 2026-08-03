@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <optional>
 
 Juego::Juego() {
   // Inicialización de sonidos
@@ -21,30 +22,32 @@ Juego::Juego() {
   ventana.setFramerateLimit(60);
   ventana.requestFocus(); // Forzar el foco de la ventana
 
-  vista.setSize(1280.f, 720.f);
-  vista.setCenter(640.f, 360.f);
+  vista.setSize({1280.f, 720.f});
+  vista.setCenter({640.f, 360.f});
   ventana.setView(vista);
 
   // Inicialización de elementos del terreno
   inicializarObstaculos(obstaculos);
 
+  texturaMapa.loadFromFile("assets/varios/mapa.png");
+  spriteMapa.setTexture(texturaMapa);
+
   // Zonas de spawn de zombies
   std::vector<sf::FloatRect> zonasSpawn = {
-      sf::FloatRect(200.f, 100.f, 400.f, 350.f),  // Superior Izquierda
-      sf::FloatRect(3250.f, 100.f, 400.f, 350.f), // Superior Derecha
-      sf::FloatRect(200.f, 850.f, 400.f, 350.f),  // Central Izquierda
-      sf::FloatRect(3250.f, 850.f, 400.f, 350.f), // Central Derecha
-      sf::FloatRect(200.f, 1600.f, 400.f, 350.f), // Inferior Izquierda
-      sf::FloatRect(3250.f, 1600.f, 400.f, 350.f) // Inferior Derecha
+      sf::FloatRect({200.f, 100.f}, {400.f, 350.f}),  // Superior Izquierda
+      sf::FloatRect({3250.f, 100.f}, {400.f, 350.f}), // Superior Derecha
+      sf::FloatRect({200.f, 850.f}, {400.f, 350.f}),  // Central Izquierda
+      sf::FloatRect({3250.f, 850.f}, {400.f, 350.f}), // Central Derecha
+      sf::FloatRect({200.f, 1600.f}, {400.f, 350.f}), // Inferior Izquierda
+      sf::FloatRect({3250.f, 1600.f}, {400.f, 350.f}) // Inferior Derecha
   };
   zombieManager.inicializarZonasSpawn(zonasSpawn);
 
   texturaProyectil.loadFromFile("assets/armas/bala.png");
-  hud.inicializar(0);
 
   trazaMosin.setFillColor(sf::Color::White);
   trazaMosin.setSize(sf::Vector2f(3000.f, 3.f));
-  trazaMosin.setOrigin(0.f, 1.5f);
+  trazaMosin.setOrigin({0.f, 1.5f});
 
   // Sembrado por defecto de personajes si personajes.dat no tiene nada
   FILE* pFileTest = fopen("personajes.dat", "rb");
@@ -83,7 +86,7 @@ Juego::Juego() {
       spriteFondoMenu.setTexture(texturaFondoMenu);
       sf::Vector2u size = texturaFondoMenu.getSize();
       spriteFondoMenu.setScale(ventana.getSize().x / size.x, ventana.getSize().y / size.y);
-      spriteFondoMenu.setOrigin(size.x/2.f, size.y/2.f);
+      spriteFondoMenu.setOrigin({size.x/2.f, size.y/2.f});
       spriteFondoMenu.setPosition(ventana.getSize().x/2.f, ventana.getSize().y/2.f);
   }
 
@@ -151,21 +154,21 @@ void Juego::inicializarObstaculos(std::vector<ObjetoMapa> &obstaculos) {
 void Juego::iniciar() {
   std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-  texturaMapa.loadFromFile("assets/varios/mapa.png");
-  spriteMapa.setTexture(texturaMapa);
   proyectiles.reserve(100);
-
+  
   trampas.emplace_back(sf::Vector2f(1920,1080));
   while (ventana.isOpen()) {
-    deltaTime = relojDelta.restart().asSeconds();
-    procesarEventos();
-    actualizar();
-    renderizar();
-  }
+      deltaTime = relojDelta.restart().asSeconds();
+      procesarEventos();
+      actualizar();
+      renderizar();
+    }
 }
 
+// ------------------------------------------------------------------------------
+
 void Juego::inicializarMenus() {
-  if (!fuenteMenu.loadFromFile("assets/minecraft.ttf")) {
+  if (!fuenteMenu.openFromFile("assets/minecraft.ttf")) {
       std::cerr << "Error: No se pudo cargar assets/minecraft.ttf para el menú" << std::endl;
   }
   
@@ -174,8 +177,8 @@ void Juego::inicializarMenus() {
   tituloJuego.setCharacterSize(50);
   tituloJuego.setFillColor(sf::Color::Red);
   sf::FloatRect bounds = tituloJuego.getLocalBounds();
-  tituloJuego.setOrigin(bounds.left + bounds.width/2.f, bounds.top + bounds.height/2.f);
-  tituloJuego.setPosition(640.f, 120.f);
+  tituloJuego.setOrigin({bounds.position.x + bounds.size.x/2.f, bounds.position.y + bounds.size.y/2.f});
+  tituloJuego.setPosition({640.f, 120.f});
   
   // Botones menú principal reestructurado
   btnMenuJugar = Boton(ventana.getSize().x/2.f-125.f, 350.f, 250.f, 50.f, fuenteMenu, "JUGAR", 
@@ -213,34 +216,43 @@ void Juego::inicializarMenus() {
       fclose(pFileCount);
   }
 
-  FILE* pFile = fopen("personajes.dat", "rb");
-  if (pFile) {
+  FILE *pFile = fopen("personajes.dat", "rb");
+  if (pFile)
+  {
       RegistroPersonaje reg;
       int idx = 0;
-      while (fread(&reg, sizeof(reg), 1, pFile) == 1) {
+      while (fread(&reg, sizeof(reg), 1, pFile) == 1)
+      {
           float btnW = 320.f;
           float btnH = 140.f;
           float btnX = 0.f;
           float btnY = 0.f;
 
-          if (totalPersonajes <= 3) {
+          if (totalPersonajes <= 3)
+          {
               // Una sola fila centrada
               float startX = 640.f - (totalPersonajes * 350.f - 30.f) / 2.f;
               btnX = startX + idx * 350.f;
               btnY = 300.f;
               btnW = 320.f;
               btnH = 150.f;
-          } else {
+          }
+          else
+          {
               // Dos filas centraditas
               int personajesFila1 = (totalPersonajes + 1) / 2;
-              if (personajesFila1 > 3) personajesFila1 = 3;
+              if (personajesFila1 > 3)
+                  personajesFila1 = 3;
               int personajesFila2 = totalPersonajes - personajesFila1;
 
-              if (idx < personajesFila1) {
+              if (idx < personajesFila1)
+              {
                   float startX = 640.f - (personajesFila1 * 350.f - 30.f) / 2.f;
                   btnX = startX + idx * 350.f;
                   btnY = 220.f;
-              } else {
+              }
+              else
+              {
                   int idxFila2 = idx - personajesFila1;
                   float startX = 640.f - (personajesFila2 * 350.f - 30.f) / 2.f;
                   btnX = startX + idxFila2 * 350.f;
@@ -251,14 +263,15 @@ void Juego::inicializarMenus() {
           }
 
           std::string nombreAMostrar = reg.nombre;
-          if (!nombreAMostrar.empty()) {
+          if (!nombreAMostrar.empty())
+          {
               nombreAMostrar[0] = std::toupper(nombreAMostrar[0]);
           }
 
-          Boton btn(btnX, btnY, btnW, btnH, fuenteMenu, 
+          Boton btn(btnX, btnY, btnW, btnH, fuenteMenu,
                     nombreAMostrar + "\nVida: " + std::to_string((int)reg.vida) + "\nEscudo: " + std::to_string((int)reg.armadura),
                     sf::Color(25, 25, 25, 220), sf::Color(80, 30, 30), sf::Color(120, 40, 40));
-          
+
           // Posicionar el texto a la derecha del botón
           btn.setTextoPosicion(btnX + 215.f, btnY + btnH / 2.f);
 
@@ -268,32 +281,35 @@ void Juego::inicializarMenus() {
 
           std::string nombreLower = reg.nombre;
           std::transform(nombreLower.begin(), nombreLower.end(), nombreLower.begin(), ::tolower);
-          if (nombreLower == "johnwick") {
+          if (nombreLower == "johnwick")
+          {
               nombreLower = "johnWick";
           }
           std::string rutaTextura = "assets/personajes/" + nombreLower + ".png";
 
-          if (bp.textura.loadFromFile(rutaTextura)) {
+          if (bp.textura.loadFromFile(rutaTextura))
+          {
               bp.sprite.setTexture(bp.textura);
               sf::Vector2u texSize = bp.textura.getSize();
               int frameW = texSize.x;
               int frameH = texSize.y;
-              bp.sprite.setTextureRect(sf::IntRect(0, 0, frameW, frameH));
-              
+              bp.sprite.setTextureRect(sf::IntRect({0, 0}, {frameW, frameH}));
+
               // Escala adaptativa para que quepa bien en la tarjeta
               float scale = 90.f / frameH;
-              if (scale > 3.0f) scale = 3.0f;
-              bp.sprite.setScale(scale, scale);
-              
-              bp.sprite.setOrigin(frameW / 2.f, frameH / 2.f);
-              bp.sprite.setPosition(btnX + 70.f, btnY + btnH / 2.f); // A la izquierda del recuadro
+              if (scale > 3.0f)
+                  scale = 3.0f;
+              bp.sprite.setScale({scale, scale});
+
+              bp.sprite.setOrigin({frameW / 2.f, frameH / 2.f});
+              bp.sprite.setPosition({btnX + 70.f, btnY + btnH / 2.f}); // A la izquierda del recuadro
           }
 
           botonesPersonajes.push_back(bp);
           idx++;
       }
       fclose(pFile);
-      
+
       // Re-vincular las texturas a los sprites
       for (auto& bp : botonesPersonajes) {
           bp.sprite.setTexture(bp.textura);
@@ -301,100 +317,136 @@ void Juego::inicializarMenus() {
   }
 }
 
-void Juego::procesarEventos() {
-  sf::Event evento;
-  sf::Vector2f posMouse = ventana.mapPixelToCoords(sf::Mouse::getPosition(ventana), ventana.getDefaultView());
+// ------------------------------------------------------------------------------
 
-  while (ventana.pollEvent(evento)) {
-    if (evento.type == sf::Event::Closed) {
-      ventana.close();
-    }
-    
-    // Controles específicos de estados
-    if (estadoActual == EstadoJuego::MenuPrincipal) {
-        if (evento.type == sf::Event::KeyPressed) {
-            if (evento.key.code == sf::Keyboard::W || evento.key.code == sf::Keyboard::Up) {
-                indiceMenuSeleccionado--;
-                if (indiceMenuSeleccionado < 0) indiceMenuSeleccionado = 2;
-            }
-            else if (evento.key.code == sf::Keyboard::S || evento.key.code == sf::Keyboard::Down) {
-                indiceMenuSeleccionado++;
-                if (indiceMenuSeleccionado > 2) indiceMenuSeleccionado = 0;
-            }
-            else if (evento.key.code == sf::Keyboard::Enter || evento.key.code == sf::Keyboard::Space) {
-                SoundManager::play("click_boton");
-                if (indiceMenuSeleccionado == 0) {
-                    estadoActual = EstadoJuego::SeleccionPersonaje;
+void Juego::procesarEventos()
+{
+    // sf::Event evento;
+    sf::Vector2f posMouse = ventana.mapPixelToCoords(sf::Mouse::getPosition(ventana), ventana.getDefaultView());
+
+    while (const std::optional evento = ventana.pollEvent())
+    {
+        if (evento->is<sf::Event::Closed>())
+        {
+            ventana.close();
+        }
+
+        // Controles específicos de estados
+        if (estadoActual == EstadoJuego::MenuPrincipal)
+        {
+            if (const auto *key = evento->getIf<sf::Event::KeyPressed>())
+            {
+                if (key->code == sf::Keyboard::Key::W || key->code == sf::Keyboard::Key::Up)
+                {
+                    indiceMenuSeleccionado--;
+                    if (indiceMenuSeleccionado < 0)
+                        indiceMenuSeleccionado = 2;
                 }
-                else if (indiceMenuSeleccionado == 1) {
-                    estadoActual = EstadoJuego::Estadisticas;
+
+                else if (key->code == sf::Keyboard::Key::S || key->code == sf::Keyboard::Key::Down)
+                {
+                    indiceMenuSeleccionado++;
+                    if (indiceMenuSeleccionado > 2)
+                        indiceMenuSeleccionado = 0;
                 }
-                else if (indiceMenuSeleccionado == 2) {
-                    ventana.close();
+
+                else if (key->code == sf::Keyboard::Key::Enter || key->code == sf::Keyboard::Key::Space)
+                {
+                    SoundManager::play("click_boton");
+                    if (indiceMenuSeleccionado == 0)
+                    {
+                        estadoActual = EstadoJuego::SeleccionPersonaje;
+                    }
+                    else if (indiceMenuSeleccionado == 1)
+                    {
+                        estadoActual = EstadoJuego::Estadisticas;
+                    }
+                    else if (indiceMenuSeleccionado == 2)
+                    {
+                        ventana.close();
+                    }
                 }
             }
         }
-        else if (evento.type == sf::Event::MouseButtonPressed) {
-            if (btnMenuJugar.fueClickeado(posMouse, evento.mouseButton.button)) {
+
+        else if (const auto *mouse = evento->getIf<sf::Event::MouseButtonPressed>())
+        {
+            if (btnMenuJugar.fueClickeado(posMouse, mouse->button))
+            {
                 SoundManager::play("click_boton");
                 estadoActual = EstadoJuego::SeleccionPersonaje;
             }
-            else if (btnMenuStats.fueClickeado(posMouse, evento.mouseButton.button)) {
+            else if (btnMenuStats.fueClickeado(posMouse, mouse->button))
+            {
                 SoundManager::play("click_boton");
                 estadoActual = EstadoJuego::Estadisticas;
             }
-            else if (btnMenuSalir.fueClickeado(posMouse, evento.mouseButton.button)) {
+            else if (btnMenuSalir.fueClickeado(posMouse, mouse->button))
+            {
                 SoundManager::play("click_boton");
                 ventana.close();
             }
         }
-    }
-    else if (estadoActual == EstadoJuego::Estadisticas) {
-        if (evento.type == sf::Event::MouseButtonPressed) {
-            if (btnVolverStats.fueClickeado(posMouse, evento.mouseButton.button)) {
-                SoundManager::play("click_boton");
-                estadoActual = EstadoJuego::MenuPrincipal;
-            }
-        }
-    }
-    else if (estadoActual == EstadoJuego::SeleccionPersonaje) {
-        if (evento.type == sf::Event::MouseButtonPressed) {
-            for (auto& bp : botonesPersonajes) {
-                if (bp.boton.fueClickeado(posMouse, evento.mouseButton.button)) {
+
+        else if (estadoActual == EstadoJuego::Estadisticas)
+        {
+            if (const auto *mouse = evento->getIf<sf::Event::MouseButtonPressed>())
+            {
+                if (btnVolverStats.fueClickeado(posMouse, mouse->button))
+                {
                     SoundManager::play("click_boton");
-                    personajeSeleccionado = bp.registro;
-                    float velocidad = personajeSeleccionado.velocidad;
-                    float cooldown = personajeSeleccionado.cooldownHabilidad;
-                    jugador = Personaje(personajeSeleccionado.id, personajeSeleccionado.idArmaEspecial, 
-                                        personajeSeleccionado.nombre, personajeSeleccionado.vida, personajeSeleccionado.armadura, 
-                                        velocidad, cooldown);
-                    hud.inicializar(personajeSeleccionado.id);
-                    zombieManager.cargarOleada(1);
-                    zombieManager.resetZombiesEliminados();
-                    estadoActual = EstadoJuego::Jugando;
-                    ventana.setMouseCursorVisible(false);
-                    break;
+                    estadoActual = EstadoJuego::MenuPrincipal;
                 }
             }
-            if (btnVolverSeleccion.fueClickeado(posMouse, evento.mouseButton.button)) {
-                SoundManager::play("click_boton");
-                estadoActual = EstadoJuego::MenuPrincipal;
+        }
+        else if (estadoActual == EstadoJuego::SeleccionPersonaje)
+        {
+            if (const auto *mouse = evento->getIf<sf::Event::MouseButtonPressed>())
+            {
+                for (auto &bp : botonesPersonajes)
+                {
+                    if (bp.boton.fueClickeado(posMouse, mouse->button))
+                    {
+                        SoundManager::play("click_boton");
+                        personajeSeleccionado = bp.registro;
+                        float velocidad = personajeSeleccionado.velocidad;
+                        float cooldown = personajeSeleccionado.cooldownHabilidad;
+                        jugador = Personaje(personajeSeleccionado.id, personajeSeleccionado.idArmaEspecial,
+                                            personajeSeleccionado.nombre, personajeSeleccionado.vida, personajeSeleccionado.armadura,
+                                            velocidad, cooldown);
+                        hud.inicializar(personajeSeleccionado.id);
+                        zombieManager.cargarOleada(1);
+                        zombieManager.resetZombiesEliminados();
+                        estadoActual = EstadoJuego::Jugando;
+                        ventana.setMouseCursorVisible(false);
+                        break;
+                    }
+                }
+                if (btnVolverSeleccion.fueClickeado(posMouse, mouse->button))
+                {
+                    SoundManager::play("click_boton");
+                    estadoActual = EstadoJuego::MenuPrincipal;
+                }
+            }
+        }
+        else if (estadoActual == EstadoJuego::Jugando)
+        {
+            if (const auto *key = evento->getIf<sf::Event::KeyPressed>())
+            {
+                if (key->code == sf::Keyboard::Key::Escape)
+                {
+                    // Registrar estadísticas al abandonar
+                    statsHistoricas.registrarNuevaPartida();
+                    statsHistoricas.registrarOleadaMaxima(zombieManager.getOleadaActual());
+                    statsHistoricas.sumarZombiesEliminados(zombieManager.getZombiesEliminados());
+                    guardarStats();
+
+                    estadoActual = EstadoJuego::MenuPrincipal;
+                    ventana.setMouseCursorVisible(false);
+                }
             }
         }
     }
-    else if (estadoActual == EstadoJuego::Jugando) {
-        if (evento.type == sf::Event::KeyPressed && evento.key.code == sf::Keyboard::Escape) {
-            // Registrar estadísticas al abandonar
-            statsHistoricas.registrarNuevaPartida();
-            statsHistoricas.registrarOleadaMaxima(zombieManager.getOleadaActual());
-            statsHistoricas.sumarZombiesEliminados(zombieManager.getZombiesEliminados());
-            guardarStats();
-
-            estadoActual = EstadoJuego::MenuPrincipal;
-            ventana.setMouseCursorVisible(false);
-        }
-    }
-  }
 }
 
 void Juego::actualizar() {
@@ -426,7 +478,7 @@ void Juego::actualizar() {
         jugador.actualizar(deltaTime, obstaculos, hitboxesZombies, mira.getPosicion(), trampas, sf::Vector2f(texturaMapa.getSize().x, texturaMapa.getSize().y));
         
         // Lógica de compra automática de recarga si no le queda reserva al presionar 'R'
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !jugador.getArma().getEnRecarga()) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && !jugador.getArma().getEnRecarga()) {
             Arma& armaActiva = jugador.getArma();
             int idArma = armaActiva.getIdArma();
             // Evitamos armas infinitas: Cuchillo (0), Arco (5), Katana (7)
@@ -441,7 +493,7 @@ void Juego::actualizar() {
         }
 
         jugador.getArma().actualizar(deltaTime, mira.getPosicion(), jugador.getPosicion(), proyectiles, texturaProyectil);
-        vista.setSize(1280.f * jugador.getMultiplicadorZoom(), 720.f * jugador.getMultiplicadorZoom());
+        vista.setSize({1280.f * jugador.getMultiplicadorZoom(), 720.f * jugador.getMultiplicadorZoom()});
       } else {
         // Registrar estadísticas de derrota
         statsHistoricas.registrarNuevaPartida();
@@ -483,13 +535,13 @@ void Juego::actualizar() {
       if (auxVistaY > texturaMapa.getSize().y - vista.getSize().y / 2.f)
         auxVistaY = texturaMapa.getSize().y - vista.getSize().y / 2.f;
 
-      vista.setCenter(auxVistaX, auxVistaY);
+      vista.setCenter({auxVistaX, auxVistaY});
       ventana.setView(vista);
 
       hud.actualizar(jugador, zombieManager);
   }
   else if (estadoActual == EstadoJuego::GameOver) {
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) || sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
           estadoActual = EstadoJuego::MenuPrincipal;
       }
   }
@@ -549,17 +601,16 @@ void Juego::renderizar() {
       panel.setFillColor(sf::Color(0, 0, 0, 220));
       panel.setOutlineColor(sf::Color::Red);
       panel.setOutlineThickness(2.f);
-      panel.setPosition(240.f, 235.f);
+      panel.setPosition({240.f, 235.f});
       ventana.draw(panel);
 
-      sf::Text txtGameOver;
-      txtGameOver.setFont(fuenteMenu);
+      sf::Text txtGameOver(fuenteMenu);
       txtGameOver.setString("GAME OVER\n\nPresione ESPACIO o ENTER\npara volver al menu");
       txtGameOver.setCharacterSize(26);
       txtGameOver.setFillColor(sf::Color::Red);
       sf::FloatRect bounds = txtGameOver.getLocalBounds();
-      txtGameOver.setOrigin(bounds.left + bounds.width/2.f, bounds.top + bounds.height/2.f);
-      txtGameOver.setPosition(640.f, 360.f);
+      txtGameOver.setOrigin({bounds.position.x + bounds.size.x/2.f, bounds.position.y + bounds.size.y/2.f});
+      txtGameOver.setPosition({640.f, 360.f});
       ventana.draw(txtGameOver);
       
       // Dibujar mira sobre la pantalla de GameOver
@@ -622,8 +673,8 @@ void Juego::renderizarEstadisticas() {
     
     textoStats.setString(statsStr);
     sf::FloatRect bounds = textoStats.getLocalBounds();
-    textoStats.setOrigin(bounds.left + bounds.width/2.f, bounds.top + bounds.height/2.f);
-    textoStats.setPosition(640.f, 300.f);
+    textoStats.setOrigin({bounds.position.x + bounds.size.x/2.f, bounds.position.y + bounds.size.y/2.f});
+    textoStats.setPosition({640.f, 300.f});
     
     ventana.draw(textoStats);
     btnVolverStats.dibujar(ventana);
@@ -657,14 +708,13 @@ void Juego::renderizarSeleccionPersonaje() {
         ventana.draw(spriteFondoMenu);
     }
 
-    sf::Text txtSelect;
-    txtSelect.setFont(fuenteMenu);
+    sf::Text txtSelect(fuenteMenu);
     txtSelect.setString("SELECCIONA TU PERSONAJE:");
     txtSelect.setCharacterSize(35);
     txtSelect.setFillColor(sf::Color::White);
     sf::FloatRect bounds = txtSelect.getLocalBounds();
-    txtSelect.setOrigin(bounds.left + bounds.width/2.f, bounds.top + bounds.height/2.f);
-    txtSelect.setPosition(640.f, 150.f);
+    txtSelect.setOrigin({bounds.position.x + bounds.size.x/2.f, bounds.position.y + bounds.size.y/2.f});
+    txtSelect.setPosition({640.f, 150.f});
     
     ventana.draw(txtSelect);
     for (auto& bp : botonesPersonajes) {
@@ -724,8 +774,8 @@ void Juego::procesarRayCast(){
     direccion.y /= longitud;
 
     float angulo = std::atan2(direccion.y, direccion.x)* 180.f / 3.14159f;
-    trazaMosin.setPosition(origen.x,origen.y+10);
-    trazaMosin.setRotation(angulo);
+    trazaMosin.setPosition({origen.x,origen.y+10});
+    trazaMosin.setRotation(sf::degrees(angulo));
 
     mostrarTrazaMosin = true;
     tiempoTrazaMosin = 0.05f;

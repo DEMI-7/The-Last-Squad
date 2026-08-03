@@ -23,7 +23,7 @@ Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcanc
     cargarTextura(rutaTextura);
 
     sf::FloatRect bounds = sprite.getLocalBounds();
-    sprite.setOrigin(0.f, bounds.height / 2.f);
+    sprite.setOrigin({0.f, bounds.size.y / 2.f});
 
     tiempoDesdeUltimoDisparo = 0.f;
     tiempoRecarga = 0.f;
@@ -78,7 +78,7 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
             spawnRayCast = false;
         }
 
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && tiempoDesdeUltimoDisparo >= cadencia && municionEnCargador > 0 && !enRecarga) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && tiempoDesdeUltimoDisparo >= cadencia && municionEnCargador > 0 && !enRecarga) {
             // el switch es para poder manejar los disparos especiales
             switch(getIdArma()) { 
                 
@@ -146,7 +146,7 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
             enRecarga = false;
         }
 
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && municionEnCargador < tamanioCargador && !enRecarga && municionActual > 0) {
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && municionEnCargador < tamanioCargador && !enRecarga && municionActual > 0) {
             int cantidad = 0;
 
             if (municionActual >= (tamanioCargador - municionEnCargador)) {

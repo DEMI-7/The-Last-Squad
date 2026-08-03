@@ -9,13 +9,21 @@ Hud::Hud() {
 
 bool Hud::inicializar(int idJug) {
 
-    texturaIcon.loadFromFile("assets/personajes/icon_" + std::to_string(idJug) + ".png");
+    if(!texturaIcon.loadFromFile("assets/personajes/icon_" + std::to_string(idJug) + ".png"))
+    {
+        return false;
+    }
     spriteIcon.setTexture(texturaIcon);
+
     //spriteIcon.setPosition(sf::Vector2f(200,1800));
     spriteIcon.setScale({0.1f, 0.1f});
 
-    texturaDinero.loadFromFile("assets/varios/dinero.png");
-    spriteDinero.setTexture(texturaDinero);
+    if(!texturaDinero.loadFromFile("assets/varios/dinero.png"))
+    {
+        return false;
+    }
+    spriteIcon.setTexture(texturaDinero);
+
     spriteDinero.setScale({0.5f, 0.5f});
     
     if (!texturaBalaPistola.loadFromFile("assets/varios/bala_pistola.png") ||
@@ -25,7 +33,7 @@ bool Hud::inicializar(int idJug) {
         return false;
     }
 
-    if (!fuente.loadFromFile("assets/minecraft.ttf")) {
+    if (!fuente.openFromFile("assets/minecraft.ttf")) {
         std::cerr << "Error: No se pudo cargar assets/minecraft.ttf" << std::endl;
         return false;
     }
@@ -158,7 +166,7 @@ void Hud::actualizar(const Personaje& jugador, const ZombieManager& zombieManage
     // 3. Arma y Munición
     Arma& arma = const_cast<Personaje&>(jugador).getArma();
     spriteArmaUI = arma.getSprite();
-    spriteArmaUI.setRotation(0.f);
+    spriteArmaUI.setRotation(sf::degrees(0.f));
     
     // Ajustar escala según el arma para equilibrar el tamaño visual en la UI
     int idArma = arma.getIdArma();
@@ -171,7 +179,7 @@ void Hud::actualizar(const Personaje& jugador, const ZombieManager& zombieManage
     }
     
     sf::FloatRect bounds = spriteArmaUI.getLocalBounds();
-    spriteArmaUI.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+    spriteArmaUI.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
 
     idArmaActiva = idArma;
     balasEnCargadorActivo = arma.getMunicionEnCargador();
@@ -217,7 +225,7 @@ void Hud::dibujar(sf::RenderWindow& ventana) {
 
     if (juegoTerminado) {
         // Mostrar cartel centrado de juego terminado
-        textoJuegoTerminado.setPosition(width / 2.f - (textoJuegoTerminado.getLocalBounds().width / 2.f), height / 2.f - (textoJuegoTerminado.getLocalBounds().height / 2.f));
+        textoJuegoTerminado.setPosition({width / 2.f - (textoJuegoTerminado.getLocalBounds().size.x / 2.f), height / 2.f - (textoJuegoTerminado.getLocalBounds().size.y / 2.f)});
         ventana.draw(textoJuegoTerminado);
     } else {
         int idArma = idArmaActiva;
@@ -225,48 +233,48 @@ void Hud::dibujar(sf::RenderWindow& ventana) {
 
         // --- POSICIONAR ELEMENTOS ---
 
-        spriteIcon.setPosition(30.f, height - 170.f);
+        spriteIcon.setPosition({30.f, height - 170.f});
 
         // Panel Jugador (Abajo a la Izquierda)
         panelJugador.setSize(sf::Vector2f(350.f, 150.f));
-        panelJugador.setPosition(20.f, height - 180.f);
+        panelJugador.setPosition({20.f, height - 180.f});
 
-        textoVida.setPosition(160.f, height - 165.f);
-        fondoBarraVida.setPosition(160.f, height - 145.f);
-        barraVida.setPosition(160.f, height - 145.f);
+        textoVida.setPosition({160.f, height - 165.f});
+        fondoBarraVida.setPosition({160.f, height - 145.f});
+        barraVida.setPosition({160.f, height - 145.f});
 
-        textoArmadura.setPosition(160.f, height - 125.f);
-        fondoBarraArmadura.setPosition(160.f, height - 105.f);
-        barraArmadura.setPosition(160.f, height - 105.f);
+        textoArmadura.setPosition({160.f, height - 125.f});
+        fondoBarraArmadura.setPosition({160.f, height - 105.f});
+        barraArmadura.setPosition({160.f, height - 105.f});
 
-        textoHabilidad.setPosition(160.f, height - 85.f);
-        fondoBarraHabilidad.setPosition(160.f, height - 65.f);
-        barraHabilidad.setPosition(160.f, height - 65.f);
+        textoHabilidad.setPosition({160.f, height - 85.f});
+        fondoBarraHabilidad.setPosition({160.f, height - 65.f});
+        barraHabilidad.setPosition({160.f, height - 65.f});
 
-        spriteDinero.setPosition(160.f, height - 45.f);
-        textoDineroJugador.setPosition(215.f, height - 47.f);
+        spriteDinero.setPosition({160.f, height - 45.f});
+        textoDineroJugador.setPosition({215.f, height - 47.f});
 
         // Panel Arma y Munición (Abajo a la Derecha)
         panelArma.setSize(sf::Vector2f(220.f, 85.f));
-        panelArma.setPosition(width - 240.f, height - 105.f);
+        panelArma.setPosition({width - 240.f, height - 105.f});
 
         float posCentroPanelArma = width - 130.f;
-        spriteArmaUI.setPosition(posCentroPanelArma, height - 102.f);
+        spriteArmaUI.setPosition({posCentroPanelArma, height - 102.f});
 
         // Posicionar el texto de reserva (o recarga) al lado del sprite del arma de forma fija
         if (armaEnRecarga) {
-            textoMunicion.setPosition(posCentroPanelArma - (textoMunicion.getLocalBounds().width / 2.f), height - 55.f);
+            textoMunicion.setPosition({posCentroPanelArma - (textoMunicion.getLocalBounds().size.x / 2.f), height - 55.f});
         } else {
-            float xTexto = posCentroPanelArma + (spriteArmaUI.getGlobalBounds().width / 2.f) + 5.f;
-            textoMunicion.setPosition(xTexto, height - 115.f);
+            float xTexto = posCentroPanelArma + (spriteArmaUI.getGlobalBounds().size.x / 2.f) + 5.f;
+            textoMunicion.setPosition({xTexto, height - 115.f});
         }
 
         // Panel Oleada (Arriba en el Centro - Desplazado 20px más abajo)
         panelOleada.setSize(sf::Vector2f(320.f, 75.f));
-        panelOleada.setPosition(width / 2.f - 160.f, 35.f);
+        panelOleada.setPosition({width / 2.f - 160.f, 35.f});
 
-        textoOleada.setPosition(width / 2.f - (textoOleada.getLocalBounds().width / 2.f), 40.f);
-        textoEstadoOleada.setPosition(width / 2.f - (textoEstadoOleada.getLocalBounds().width / 2.f), 70.f);
+        textoOleada.setPosition({width / 2.f - (textoOleada.getLocalBounds().size.x / 2.f), 40.f});
+        textoEstadoOleada.setPosition({width / 2.f - (textoEstadoOleada.getLocalBounds().size.x / 2.f), 70.f});
 
         // --- DIBUJAR ---
         // ventana.draw(panelJugador); // Mantener paneles invisibles como se solicitó
@@ -312,10 +320,10 @@ void Hud::dibujar(sf::RenderWindow& ventana) {
                 scale = 0.44f;
                 espaciadoX = -15.f; // Ajustado
             }
-            spriteBalaUI.setScale(scale, scale);
+            spriteBalaUI.setScale({scale, scale});
 
-            float anchoBala = spriteBalaUI.getGlobalBounds().width;
-            float altoBala = spriteBalaUI.getGlobalBounds().height;
+            float anchoBala = spriteBalaUI.getGlobalBounds().size.x;
+            float altoBala = spriteBalaUI.getGlobalBounds().size.y;
             float espaciadoY = 2.f; // Espacio entre filas verticalmente
             
             // Dibujamos en filas de hasta 15 balas para evitar desbordar el panel
@@ -332,7 +340,7 @@ void Hud::dibujar(sf::RenderWindow& ventana) {
                 float posX = xInicio + columna * (anchoBala + espaciadoX);
                 float posY = yInicio - fila * (altoBala + espaciadoY);
 
-                spriteBalaUI.setPosition(posX, posY);
+                spriteBalaUI.setPosition({posX, posY});
                 ventana.draw(spriteBalaUI);
             }
         }

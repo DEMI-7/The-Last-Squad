@@ -35,7 +35,7 @@ void ZombieManager::seleccionarZonaSpawnOptima(const sf::Vector2f& posJugador) {
 
     for (size_t i = 0; i < zonasSpawn.size(); ++i) {
         const auto &zona = zonasSpawn[i];
-        sf::Vector2f centroZona(zona.left + zona.width / 2.f, zona.top + zona.height / 2.f);
+        sf::Vector2f centroZona(zona.position.x + zona.size.x / 2.f, zona.position.y + zona.size.y / 2.f);
         sf::Vector2f diff = centroZona - posJugador;
         float distSq = diff.x * diff.x + diff.y * diff.y;
         listado.push_back({static_cast<int>(i), distSq});
@@ -68,15 +68,15 @@ void ZombieManager::intentarSpawnearUnZombie(const std::vector<ObjetoMapa>& obst
 
     for (int intento = 0; intento < maxIntentos; ++intento) {
         // Generar coordenadas aleatorias dentro de la zona elegida
-        float rx = zonaElegida.left + static_cast<float>(std::rand() % static_cast<int>(zonaElegida.width));
-        float ry = zonaElegida.top + static_cast<float>(std::rand() % static_cast<int>(zonaElegida.height));
+        float rx = zonaElegida.position.x + static_cast<float>(std::rand() % static_cast<int>(zonaElegida.size.x));
+        float ry = zonaElegida.position.y + static_cast<float>(std::rand() % static_cast<int>(zonaElegida.size.y));
         spawn = sf::Vector2f(rx, ry);
 
         // A. Verificar colisión del nuevo zombie con los obstáculos
-        sf::FloatRect hitboxZombie(spawn.x - 13.f, spawn.y - 16.8f, 26.f, 33.6f);
+        sf::FloatRect hitboxZombie({spawn.x - 13.f, spawn.y - 16.8f}, {26.f, 33.6f});
         bool colisionaConObstaculo = false;
         for (const auto &obstaculo : obstaculos) {
-            if (hitboxZombie.intersects(obstaculo.getHitbox())) {
+            if (hitboxZombie.findIntersection(obstaculo.getHitbox())) {
                 colisionaConObstaculo = true;
                 break;
             }
@@ -183,7 +183,7 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
     // 2. Procesar colisiones de Proyectiles (Balas) contra los Zombies
     for (auto &proyectil : proyectiles) {
         for (auto &zombie : zombies) {
-            if (!zombie.muerto() && proyectil.getHitbox().intersects(zombie.getHitbox())) {
+            if (!zombie.muerto() && proyectil.getHitbox().findIntersection(zombie.getHitbox())) {
                 zombie.quitarVida(proyectil.getDanio());
                 proyectil.desactivar(); // Marcar el proyectil para ser destruido
                 
@@ -208,12 +208,12 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
         if (!zombie.muerto() && jugador.estaVivo() && !jugador.esInvulnerable()) {
             // Expandimos la hitbox del jugador ligeramente para dar tolerancia al área de contacto
             sf::FloatRect expandedHitbox = jugador.getHitbox();
-            expandedHitbox.left -= 2.f;
-            expandedHitbox.top -= 2.f;
-            expandedHitbox.width += 4.f;
-            expandedHitbox.height += 4.f;
+            expandedHitbox.position.x -= 2.f;
+            expandedHitbox.position.y -= 2.f;
+            expandedHitbox.size.x += 4.f;
+            expandedHitbox.size.y += 4.f;
 
-            if (expandedHitbox.intersects(zombie.getHitbox())) {
+            if (expandedHitbox.findIntersection(zombie.getHitbox())) {
                 if (zombie.puedeAtacar()) {
                     jugador.recibirDanio(zombie.getAtaque());
                     zombie.reiniciarTiempoAtaque(); // Reinicia el cronómetro del cooldown de ataque del zombie
@@ -247,7 +247,7 @@ void ZombieManager::actualizar(float deltaTime, Personaje& jugador, const std::v
 
     for (auto &trampa : trampas) {
         for (auto &zombie : zombies) {
-            if (trampa.getHitbox().intersects(zombie.getHitbox()) && trampa.getExplosion() == true) {
+            if (trampa.getHitbox().findIntersection(zombie.getHitbox()) && trampa.getExplosion() == true) {
                 zombie.quitarVida(trampa.getDanio());
                 exploto = true;
             }
