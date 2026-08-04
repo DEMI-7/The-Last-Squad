@@ -11,8 +11,14 @@ Gitignore es para no subir archivos basura de la compilacion
 # compilar
 g++ src/main.cpp src/Juego.cpp src/Personaje.cpp src/ObjetoGrafico.cpp src/Entidad.cpp src/ObjetoMapa.cpp src/Oleada.cpp src/Zombie.cpp src/Arma.cpp src/Proyectil.cpp src/Puntero.cpp src/MenuDesarrollador.cpp src/archivoArma.cpp src/archivoPersonaje.cpp src/ZombieManager.cpp src/Mina.cpp src/Hud.cpp src/SoundManager.cpp -Iinclude -o build/juegoa -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
+g++ -std=c++20 -Iinclude src/*.cpp -o build/NuevoMenu.exe -lsfml-graphics -lsfml-window -lsfml-system
+
+g++ -std=c++20 -Iinclude src/main.cpp src/Juego.cpp src/MenuPrincipal.cpp src/Gameplay.cpp -o build/NuevoMenu.exe -lsfml-graphics -lsfml-window -lsfml-system
+
 # ejecuta
 .\build\juego.exe
+
+.\build\NuevoMenu.exe
 
 ### Instalación de SFML
 
