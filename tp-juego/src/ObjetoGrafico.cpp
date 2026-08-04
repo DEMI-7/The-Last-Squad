@@ -1,6 +1,6 @@
 #include "../include/ObjetoGrafico.h"
 
-ObjetoGrafico::ObjetoGrafico()
+ObjetoGrafico::ObjetoGrafico() : sprite(textura)
 {
     //------------HITBOX------------
     mostrarHitbox = false;
@@ -11,7 +11,7 @@ ObjetoGrafico::ObjetoGrafico()
 
 }
 
-ObjetoGrafico::ObjetoGrafico(const ObjetoGrafico& otro) {
+ObjetoGrafico::ObjetoGrafico(const ObjetoGrafico& otro) : sprite(textura) {
     textura = otro.textura;
     sprite = otro.sprite;
     sprite.setTexture(textura); // Volver a enlazar la textura copiada al sprite copiado

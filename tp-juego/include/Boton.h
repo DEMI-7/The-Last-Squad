@@ -69,4 +69,9 @@ public:
     sf::FloatRect getGlobalBounds() const {
         return caja.getGlobalBounds();
     }
+
+    sf::RectangleShape& getCaja() {
+        return caja;
+    }
+
 };

@@ -3,8 +3,13 @@
 #include <iomanip>
 #include <sstream>
 
-Hud::Hud() {
+Hud::Hud() : textoVida(fuente), textoArmadura(fuente), textoArma(fuente), textoMunicion(fuente),
+             textoOleada(fuente), textoEstadoOleada(fuente), textoJuegoTerminado(fuente), textoDineroJugador(fuente),
+             textoHabilidad(fuente),spriteIcon(texturaIcon),
+             spriteDinero(texturaDinero),
+             spriteBalaUI(texturaBalaPistola), spriteArmaUI(texturaDinero) {
     juegoTerminado = false;
+
 }
 
 bool Hud::inicializar(int idJug) {

@@ -20,5 +20,5 @@ void Puntero::actualizar(sf::RenderWindow& ventana, const sf::View& vista, float
     setPosicionCentrado(posMundo.x, posMundo.y);
 
     // 4. Rotar el puntero
-    sprite.rotate(50.f * deltaTime);
+    sprite.rotate(sf::degrees(50.f * deltaTime));
 }

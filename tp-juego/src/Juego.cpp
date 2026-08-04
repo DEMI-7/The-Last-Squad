@@ -9,7 +9,7 @@
 #include <cstring>
 #include <optional>
 
-Juego::Juego() {
+Juego::Juego()  : spriteMapa(texturaMapa), spriteFondoMenu(texturaFondoMenu), tituloJuego(fuenteMenu),textoStats(fuenteMenu){
   // Inicialización de sonidos
   SoundManager::cargarSonidos();
 
@@ -17,7 +17,7 @@ Juego::Juego() {
   indiceMenuSeleccionado = 0;
 
   sf::VideoMode modoEscritorio = sf::VideoMode::getDesktopMode();
-  ventana.create(modoEscritorio, "The Last Squad", sf::Style::Fullscreen);
+  ventana.create(modoEscritorio, "The Last Squad", sf::State::Fullscreen);
   ventana.setMouseCursorVisible(false); // Ocultar el cursor estándar para usar la mira personalizada
   ventana.setFramerateLimit(60);
   ventana.requestFocus(); // Forzar el foco de la ventana
@@ -30,7 +30,6 @@ Juego::Juego() {
   inicializarObstaculos(obstaculos);
 
   texturaMapa.loadFromFile("assets/varios/mapa.png");
-  spriteMapa.setTexture(texturaMapa);
 
   // Zonas de spawn de zombies
   std::vector<sf::FloatRect> zonasSpawn = {
@@ -83,15 +82,27 @@ Juego::Juego() {
   // Cargar fondo del menú personalizado
   tieneFondoMenu = texturaFondoMenu.loadFromFile("assets/menu_bg.png");
   if (tieneFondoMenu) {
-      spriteFondoMenu.setTexture(texturaFondoMenu);
-      sf::Vector2u size = texturaFondoMenu.getSize();
-      spriteFondoMenu.setScale(ventana.getSize().x / size.x, ventana.getSize().y / size.y);
-      spriteFondoMenu.setOrigin({size.x/2.f, size.y/2.f});
-      spriteFondoMenu.setPosition(ventana.getSize().x/2.f, ventana.getSize().y/2.f);
+    spriteFondoMenu.setTexture(texturaFondoMenu);
+    sf::Vector2u size = texturaFondoMenu.getSize();
+    spriteFondoMenu.setScale({ventana.getSize().x / size.x, ventana.getSize().y / size.y});
+    std::cout << spriteFondoMenu.getScale().x << " " << spriteFondoMenu.getScale().y << std::endl;
+    spriteFondoMenu.setOrigin({size.x/2.f, size.y/2.f});
+    spriteFondoMenu.setPosition({ventana.getSize().x/2.f, ventana.getSize().y/2.f});
+
+
+    std::cout << "Ventana: "
+          << ventana.getSize().x << " "
+          << ventana.getSize().y << std::endl;
+
+std::cout << "Textura: "
+          << size.x << " "
+          << size.y << std::endl;
   }
 
   inicializarMenus();
   estadoActual = EstadoJuego::MenuPrincipal;
+
+  
 }
 
 void Juego::inicializarObstaculos(std::vector<ObjetoMapa> &obstaculos) {
@@ -181,20 +192,20 @@ void Juego::inicializarMenus() {
   tituloJuego.setPosition({640.f, 120.f});
   
   // Botones menú principal reestructurado
-  btnMenuJugar = Boton(ventana.getSize().x/2.f-125.f, 350.f, 250.f, 50.f, fuenteMenu, "JUGAR", 
+  btnMenuJugar.emplace(ventana.getSize().x/2.f-125.f, 350.f, 250.f, 50.f, fuenteMenu, "JUGAR", 
                        sf::Color(25, 25, 25, 220), sf::Color(100, 20, 20), sf::Color(150, 30, 30));
   
-  btnMenuStats = Boton(ventana.getSize().x/2.f-125.f, 430.f, 250.f, 50.f, fuenteMenu, "ESTADISTICAS", 
+  btnMenuStats.emplace(ventana.getSize().x/2.f-125.f, 430.f, 250.f, 50.f, fuenteMenu, "ESTADISTICAS", 
                        sf::Color(25, 25, 25, 220), sf::Color(100, 20, 20), sf::Color(150, 30, 30));
                           
-  btnMenuSalir = Boton(ventana.getSize().x/2.f-125.f, 510.f, 250.f, 50.f, fuenteMenu, "SALIR", 
+  btnMenuSalir.emplace(ventana.getSize().x/2.f-125.f, 510.f, 250.f, 50.f, fuenteMenu, "SALIR", 
                        sf::Color(25, 25, 25, 220), sf::Color(100, 20, 20), sf::Color(150, 30, 30));
 
   // Volver de Selección y de Estadísticas
-  btnVolverSeleccion = Boton(ventana.getSize().x/2.f-125.f, 600.f, 250.f, 50.f, fuenteMenu, "VOLVER", 
+  btnVolverSeleccion.emplace(ventana.getSize().x/2.f-125.f, 600.f, 250.f, 50.f, fuenteMenu, "VOLVER", 
                              sf::Color(25, 25, 25, 220), sf::Color(80, 80, 80), sf::Color(120, 120, 120));
 
-  btnVolverStats = Boton(ventana.getSize().x/2.f-125.f, 580.f, 250.f, 50.f, fuenteMenu, "VOLVER",
+  btnVolverStats.emplace(ventana.getSize().x/2.f-125.f, 580.f, 250.f, 50.f, fuenteMenu, "VOLVER",
                          sf::Color(25, 25, 25, 220), sf::Color(80, 80, 80), sf::Color(120, 120, 120));
 
   // Textos para Estadísticas
@@ -204,6 +215,7 @@ void Juego::inicializarMenus() {
 
   // Cargar personajes para botones de selección
   botonesPersonajes.clear();
+  botonesPersonajes.reserve(10); // Reservar espacio para 10 personajes como máximo
 
   // Contar cuántos personajes hay en la base de datos
   int totalPersonajes = 0;
@@ -275,45 +287,29 @@ void Juego::inicializarMenus() {
           // Posicionar el texto a la derecha del botón
           btn.setTextoPosicion(btnX + 215.f, btnY + btnH / 2.f);
 
-          BotonPersonaje bp;
-          bp.boton = btn;
-          bp.registro = reg;
-
+          
           std::string nombreLower = reg.nombre;
           std::transform(nombreLower.begin(), nombreLower.end(), nombreLower.begin(), ::tolower);
           if (nombreLower == "johnwick")
           {
               nombreLower = "johnWick";
-          }
-          std::string rutaTextura = "assets/personajes/" + nombreLower + ".png";
+            }
+            std::string rutaTextura = "assets/personajes/" + nombreLower + ".png";
 
-          if (bp.textura.loadFromFile(rutaTextura))
-          {
-              bp.sprite.setTexture(bp.textura);
-              sf::Vector2u texSize = bp.textura.getSize();
-              int frameW = texSize.x;
-              int frameH = texSize.y;
-              bp.sprite.setTextureRect(sf::IntRect({0, 0}, {frameW, frameH}));
-
-              // Escala adaptativa para que quepa bien en la tarjeta
-              float scale = 90.f / frameH;
-              if (scale > 3.0f)
-                  scale = 3.0f;
-              bp.sprite.setScale({scale, scale});
-
-              bp.sprite.setOrigin({frameW / 2.f, frameH / 2.f});
-              bp.sprite.setPosition({btnX + 70.f, btnY + btnH / 2.f}); // A la izquierda del recuadro
-          }
-
-          botonesPersonajes.push_back(bp);
+            sf::Texture texturaBase(rutaTextura);
+            
+            //BotonPersonaje bp (btn, texturaBase, reg);
+          botonesPersonajes.emplace_back(btn, texturaBase, reg);
           idx++;
       }
       fclose(pFile);
 
+      /*
       // Re-vincular las texturas a los sprites
       for (auto& bp : botonesPersonajes) {
-          bp.sprite.setTexture(bp.textura);
-      }
+        bp.sprite.setTexture(bp.textura);
+    }
+    */
   }
 }
 
@@ -371,17 +367,17 @@ void Juego::procesarEventos()
 
         else if (const auto *mouse = evento->getIf<sf::Event::MouseButtonPressed>())
         {
-            if (btnMenuJugar.fueClickeado(posMouse, mouse->button))
+            if (btnMenuJugar->fueClickeado(posMouse, mouse->button))
             {
                 SoundManager::play("click_boton");
                 estadoActual = EstadoJuego::SeleccionPersonaje;
             }
-            else if (btnMenuStats.fueClickeado(posMouse, mouse->button))
+            else if (btnMenuStats->fueClickeado(posMouse, mouse->button))
             {
                 SoundManager::play("click_boton");
                 estadoActual = EstadoJuego::Estadisticas;
             }
-            else if (btnMenuSalir.fueClickeado(posMouse, mouse->button))
+            else if (btnMenuSalir->fueClickeado(posMouse, mouse->button))
             {
                 SoundManager::play("click_boton");
                 ventana.close();
@@ -392,7 +388,7 @@ void Juego::procesarEventos()
         {
             if (const auto *mouse = evento->getIf<sf::Event::MouseButtonPressed>())
             {
-                if (btnVolverStats.fueClickeado(posMouse, mouse->button))
+                if (btnVolverStats->fueClickeado(posMouse, mouse->button))
                 {
                     SoundManager::play("click_boton");
                     estadoActual = EstadoJuego::MenuPrincipal;
@@ -422,7 +418,7 @@ void Juego::procesarEventos()
                         break;
                     }
                 }
-                if (btnVolverSeleccion.fueClickeado(posMouse, mouse->button))
+                if (btnVolverSeleccion->fueClickeado(posMouse, mouse->button))
                 {
                     SoundManager::play("click_boton");
                     estadoActual = EstadoJuego::MenuPrincipal;
@@ -622,17 +618,17 @@ void Juego::renderizar() {
 
 void Juego::actualizarMenu(sf::Vector2f posMouse) {
     int ultimoIndice = indiceMenuSeleccionado;
-    if (btnMenuJugar.getGlobalBounds().contains(posMouse)) indiceMenuSeleccionado = 0;
-    else if (btnMenuStats.getGlobalBounds().contains(posMouse)) indiceMenuSeleccionado = 1;
-    else if (btnMenuSalir.getGlobalBounds().contains(posMouse)) indiceMenuSeleccionado = 2;
+    if (btnMenuJugar->getGlobalBounds().contains(posMouse)) indiceMenuSeleccionado = 0;
+    else if (btnMenuStats->getGlobalBounds().contains(posMouse)) indiceMenuSeleccionado = 1;
+    else if (btnMenuSalir->getGlobalBounds().contains(posMouse)) indiceMenuSeleccionado = 2;
 
     if (ultimoIndice != indiceMenuSeleccionado) {
         SoundManager::play("seleccion");
     }
 
-    btnMenuJugar.actualizar(posMouse, indiceMenuSeleccionado == 0);
-    btnMenuStats.actualizar(posMouse, indiceMenuSeleccionado == 1);
-    btnMenuSalir.actualizar(posMouse, indiceMenuSeleccionado == 2);
+    btnMenuJugar->actualizar(posMouse, indiceMenuSeleccionado == 0);
+    btnMenuStats->actualizar(posMouse, indiceMenuSeleccionado == 1);
+    btnMenuSalir->actualizar(posMouse, indiceMenuSeleccionado == 2);
 }
 
 void Juego::renderizarMenu() {
@@ -642,9 +638,9 @@ void Juego::renderizarMenu() {
     } else {
         ventana.draw(tituloJuego);
     }
-    btnMenuJugar.dibujar(ventana);
-    btnMenuStats.dibujar(ventana);
-    btnMenuSalir.dibujar(ventana);
+    btnMenuJugar->dibujar(ventana);
+    btnMenuStats->dibujar(ventana);
+    btnMenuSalir->dibujar(ventana);
     
     // Dibujar mira personalizada sobre los botones
     mira.dibujar(ventana);
@@ -652,8 +648,8 @@ void Juego::renderizarMenu() {
 
 void Juego::actualizarEstadisticas(sf::Vector2f posMouse) {
     static bool hoverVolver = false;
-    btnVolverStats.actualizar(posMouse);
-    bool currentHover = btnVolverStats.getGlobalBounds().contains(posMouse);
+    btnVolverStats->actualizar(posMouse);
+    bool currentHover = btnVolverStats->getGlobalBounds().contains(posMouse);
     if (currentHover != hoverVolver && currentHover) {
         SoundManager::play("seleccion");
     }
@@ -677,7 +673,7 @@ void Juego::renderizarEstadisticas() {
     textoStats.setPosition({640.f, 300.f});
     
     ventana.draw(textoStats);
-    btnVolverStats.dibujar(ventana);
+    btnVolverStats->dibujar(ventana);
     mira.dibujar(ventana);
 }
 
@@ -691,8 +687,8 @@ void Juego::actualizarSeleccionPersonaje(sf::Vector2f posMouse) {
             currentHover = i;
         }
     }
-    btnVolverSeleccion.actualizar(posMouse);
-    if (btnVolverSeleccion.getGlobalBounds().contains(posMouse)) {
+    btnVolverSeleccion->actualizar(posMouse);
+    if (btnVolverSeleccion->getGlobalBounds().contains(posMouse)) {
         currentHover = (int)botonesPersonajes.size();
     }
 
@@ -721,7 +717,7 @@ void Juego::renderizarSeleccionPersonaje() {
         bp.boton.dibujar(ventana);
         ventana.draw(bp.sprite);
     }
-    btnVolverSeleccion.dibujar(ventana);
+    btnVolverSeleccion->dibujar(ventana);
     
     // Dibujar mira sobre la selección
     mira.dibujar(ventana);
