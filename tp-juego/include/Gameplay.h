@@ -12,7 +12,4 @@ class Gameplay : public Pantalla {
         void dibujar(sf::RenderWindow&) override;
 
     private:
-
-    sf::Texture texturaEjemplo;
-    sf::Sprite spriteEjemplo;
 };

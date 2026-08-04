@@ -10,4 +10,9 @@ class MenuPrincipal : public Pantalla {
         void actualizar(float deltaTime) override;
 
         void dibujar(sf::RenderWindow& ventana) override;
+
+    private:
+
+        sf::Texture texturaFondoMenu;
+        sf::Sprite spriteFondoMenu;
 };

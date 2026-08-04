@@ -2,8 +2,18 @@
 #include "../include/Juego.h"
 #include "../include/Gameplay.h"
 
-MenuPrincipal::MenuPrincipal(Juego* juego) : Pantalla(juego){
+#include <iostream>
 
+MenuPrincipal::MenuPrincipal(Juego* juego) : Pantalla(juego), spriteFondoMenu(texturaFondoMenu) {
+    if(texturaFondoMenu.loadFromFile("assets/menu_bg.png")) {
+        std::cout << "se importo bien" << std::endl;
+    } else {
+        std::cout << "fallo carga imagen" << std::endl;
+    }
+
+    //spriteEjemplo.setTexture(texturaEjemplo);
+
+    spriteFondoMenu.setTextureRect(sf::IntRect({ 0, 0 }, { static_cast<int>(texturaFondoMenu.getSize().x), static_cast<int>(texturaFondoMenu.getSize().y) }));
 }
 
 void MenuPrincipal::manejarEventos(const sf::Event& evento) {
@@ -19,5 +29,5 @@ void MenuPrincipal::actualizar(float deltaTime) {
 }
 
 void MenuPrincipal::dibujar(sf::RenderWindow& ventana) {
-
+    ventana.draw(spriteFondoMenu);
 }

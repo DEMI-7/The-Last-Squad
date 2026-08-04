@@ -9,7 +9,7 @@
 #include <cstring>
 #include <optional>
 
-Juego::Juego()  : spriteMapa(texturaMapa), spriteFondoMenu(texturaFondoMenu), tituloJuego(fuenteMenu),textoStats(fuenteMenu){
+Juego::Juego()  : spriteMapa(texturaMapa), spriteFondoMenu(texturaFondoMenu),textoStats(fuenteMenu) {
   // Inicialización de sonidos
   SoundManager::cargarSonidos();
 
@@ -182,14 +182,6 @@ void Juego::inicializarMenus() {
   if (!fuenteMenu.openFromFile("assets/minecraft.ttf")) {
       std::cerr << "Error: No se pudo cargar assets/minecraft.ttf para el menú" << std::endl;
   }
-  
-  tituloJuego.setFont(fuenteMenu);
-  tituloJuego.setString("THE LAST SQUAD");
-  tituloJuego.setCharacterSize(50);
-  tituloJuego.setFillColor(sf::Color::Red);
-  sf::FloatRect bounds = tituloJuego.getLocalBounds();
-  tituloJuego.setOrigin({bounds.position.x + bounds.size.x/2.f, bounds.position.y + bounds.size.y/2.f});
-  tituloJuego.setPosition({640.f, 120.f});
   
   // Botones menú principal reestructurado
   btnMenuJugar.emplace(ventana.getSize().x/2.f-125.f, 350.f, 250.f, 50.f, fuenteMenu, "JUGAR", 
@@ -635,8 +627,6 @@ void Juego::renderizarMenu() {
     ventana.setView(ventana.getDefaultView());
     if (tieneFondoMenu) {
         ventana.draw(spriteFondoMenu);
-    } else {
-        ventana.draw(tituloJuego);
     }
     btnMenuJugar->dibujar(ventana);
     btnMenuStats->dibujar(ventana);

@@ -12,7 +12,7 @@
 #include <string>
 #include <optional>
 
-enum class EstadoJuego {
+enum class EstadoJuego { 
     MenuPrincipal,
     Estadisticas,
     SeleccionPersonaje,
