@@ -1,38 +1,50 @@
 #include "../include/ObjetoGrafico.h"
-#include <iostream>
 
-ObjetoGrafico::ObjetoGrafico(const std::string& rutaTextura) : sprite(textura) {
-    
-    if (!textura.loadFromFile(rutaTextura)) {
-        std::cout << "Error al cargar la textura desde: " << rutaTextura << std::endl;
-    }
-
-    sprite.setTextureRect(sf::IntRect({ 0, 0 }, { static_cast<int>(textura.getSize().x), static_cast<int>(textura.getSize().y) }));
-
-    //------------HITBOX------------
-    mostrarHitbox = false;
-    hitboxDebug.setFillColor(sf::Color::Transparent);
-    hitboxDebug.setOutlineColor(sf::Color::Red);
-    hitboxDebug.setOutlineThickness(2.f);
-    angulo = 0.f;
-}
-
-ObjetoGrafico::ObjetoGrafico() : sprite(textura) {
-    //------------HITBOX------------
-    mostrarHitbox = false;
-    hitboxDebug.setFillColor(sf::Color::Transparent);
-    hitboxDebug.setOutlineColor(sf::Color::Red);
-    hitboxDebug.setOutlineThickness(2.f);
-    angulo = 0.f;
-}
-
-void ObjetoGrafico::cargarTextura(const std::string& rutaTextura)
+ObjetoGrafico::ObjetoGrafico() : sprite(textura)
 {
-    if (!textura.loadFromFile(rutaTextura)) {
-        std::cout << "Error al cargar la textura desde: " << rutaTextura << std::endl;
+    //------------HITBOX------------
+    mostrarHitbox = false;
+    hitboxDebug.setFillColor(sf::Color::Transparent);
+    hitboxDebug.setOutlineColor(sf::Color::Red);
+    hitboxDebug.setOutlineThickness(2.f);
+    angulo = 0.f;
+
+}
+
+ObjetoGrafico::ObjetoGrafico(const ObjetoGrafico& otro) : sprite(textura) {
+    textura = otro.textura;
+    sprite = otro.sprite;
+    sprite.setTexture(textura); // Volver a enlazar la textura copiada al sprite copiado
+    hitbox = otro.hitbox;
+    hitboxDebug = otro.hitboxDebug;
+    mostrarHitbox = otro.mostrarHitbox;
+    angulo = otro.angulo;
+}
+
+ObjetoGrafico& ObjetoGrafico::operator=(const ObjetoGrafico& otro) {
+    if (this != &otro) {
+        textura = otro.textura;
+        sprite = otro.sprite;
+        sprite.setTexture(textura); // Volver a enlazar la textura copiada al sprite copiado
+        hitbox = otro.hitbox;
+        hitboxDebug = otro.hitboxDebug;
+        mostrarHitbox = otro.mostrarHitbox;
+        angulo = otro.angulo;
+    }
+    return *this;
+}
+
+
+bool ObjetoGrafico::cargarTextura(const std::string& ruta)
+{
+    if (!textura.loadFromFile(ruta))
+    {
+        return false;
     }
 
-    sprite.setTextureRect(sf::IntRect({ 0, 0 }, { static_cast<int>(textura.getSize().x), static_cast<int>(textura.getSize().y) }));
+    sprite.setTexture(textura);
+
+    return true;
 }
 
 void ObjetoGrafico::setPosicionCentrado(float x, float y)
@@ -72,11 +84,26 @@ void ObjetoGrafico::centrarOrigen()
     sprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
 }
 
-// setea cuantos pixeles de la textura se muestran en el sprite, no cambia el tamaño del sprite
 void ObjetoGrafico::setearTamanioSprite(int ancho, int alto) {
     sprite.setTextureRect(sf::IntRect({0, 0}, {ancho, alto}));
     altoSprite = alto;
     anchoSprite = ancho;
+}
+
+void ObjetoGrafico::siguienteSprite(){
+    frameActual ++;
+
+    if (frameActual >= cantidadFrames){
+        frameActual = 0;
+    }
+
+    sprite.setTextureRect(sf::IntRect({frameActual*anchoSprite, animacionActual * altoSprite}, {anchoSprite, altoSprite}));
+}
+
+void ObjetoGrafico::anteriorSprite(){
+    frameActual = (frameActual - 1 + cantidadFrames) % cantidadFrames;
+
+    sprite.setTextureRect(sf::IntRect({frameActual*anchoSprite, animacionActual * altoSprite}, {anchoSprite, altoSprite}));
 }
 
 void ObjetoGrafico::escalarSprite(float factorX, float factorY){
@@ -123,35 +150,4 @@ void ObjetoGrafico::setHitbox(float ancho, float alto)
 
 sf::FloatRect ObjetoGrafico::getHitbox() const {
     return hitbox;
-}
-
-void ObjetoGrafico::ajustarHitboxAlSprite(){
-
-    sf::FloatRect limites = sprite.getGlobalBounds();
-
-    hitbox.position = limites.position;
-    hitbox.size = limites.size;
-    hitboxDebug.setSize(hitbox.size);
-}
-
-/*
-void ObjetoGrafico::siguienteSprite(){
-    frameActual ++;
-    
-    if (frameActual >= cantidadFrames){
-        frameActual = 0;
-    }
-    
-    sprite.setTextureRect(sf::IntRect({frameActual*anchoSprite, animacionActual * altoSprite}, {anchoSprite, altoSprite}));
-}
-
-void ObjetoGrafico::anteriorSprite(){
-    frameActual = (frameActual - 1 + cantidadFrames) % cantidadFrames;
-    
-    sprite.setTextureRect(sf::IntRect({frameActual*anchoSprite, animacionActual * altoSprite}, {anchoSprite, altoSprite}));
-}
-*/
-
-void ObjetoGrafico::seleccionarSprite(int columna, int fila) {
-    sprite.setTextureRect(sf::IntRect({columna * anchoSprite, fila * altoSprite}, {anchoSprite, altoSprite}));
 }

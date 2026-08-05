@@ -1,5 +1,6 @@
 #pragma once
 #include "Pantalla.h"
+#include "boton.h"
 
 class MenuPrincipal : public Pantalla {
     public:
@@ -15,4 +16,5 @@ class MenuPrincipal : public Pantalla {
 
         sf::Texture texturaFondoMenu;
         sf::Sprite spriteFondoMenu;
+        Boton botonJugar;
 };

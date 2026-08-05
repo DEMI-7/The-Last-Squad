@@ -11,14 +11,12 @@ protected:
 
     int altoSprite;
     int anchoSprite;
-    /*
     int cantidadFrames;
     int frameActual = 0; //columa
     int animacionActual = 0; //fila
     float tiempoAnimacion = 0;
     float velocidadAnimacion = 0;
-    */
-    
+
     float angulo;
 
     //------------HITBOX------------
@@ -30,10 +28,9 @@ protected:
     
     public:
     
-    ObjetoGrafico(const std::string& rutaTextura);
     ObjetoGrafico();
-
-    void cargarTextura(const std::string& rutaTextura);
+    ObjetoGrafico(const ObjetoGrafico& otro);
+    ObjetoGrafico& operator=(const ObjetoGrafico& otro);
     
     //------------POSICIONAMIENTO------------
     void setPosicionCentrado(float x, float y); //tiene en cuenta el origen centrado del sprite para posicionar
@@ -41,6 +38,9 @@ protected:
     void mover(float offsetX, float offsetY);
     
     //------------CONFIGURACION DE SPRITE------------
+    void siguienteSprite();
+    void anteriorSprite();
+    bool cargarTextura(const std::string& ruta);
     void centrarOrigen();
     void setearTamanioSprite(int ancho, int alto); //ajusta cuantos pixeles de la textura se muestran en el sprite
     void escalarSprite(float factorX, float factorY); //multiplica el tamaño del sprite por los factores dados
@@ -48,13 +48,6 @@ protected:
     //------------ACTUALIZACION Y DIBUJO------------
     virtual void actualizar(float deltaTime);
     virtual void dibujar(sf::RenderWindow& ventana);
-
-    /*
-    void siguienteSprite();
-    void anteriorSprite();
-    */
-
-    void seleccionarSprite(int columna, int fila);
 
     //------------GETTERS------------
     sf::Vector2f getPosicion() const;
@@ -65,6 +58,5 @@ protected:
     //------------HITBOX------------
     void setHitbox(float ancho, float alto);
     sf::FloatRect getHitbox() const;
-    void ajustarHitboxAlSprite();
 
 };

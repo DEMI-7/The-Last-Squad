@@ -1,77 +1,33 @@
 #pragma once
-#include <SFML/Graphics.hpp>
-#include <string>
 
-class Boton {
-private:
-    sf::RectangleShape caja;
-    sf::Text texto;
-    sf::Color colorNormal;
-    sf::Color colorHover;
-    sf::Color colorClick;
-    bool hover;
+#include "ObjetoGrafico.h"
 
-public:
-    //Boton() : hover(false) {}
+class Boton : public ObjetoGrafico {
+    private:
+        int id;
+        bool hover;
+        bool presionado;
 
-    Boton(float x, float y, float ancho, float alto, sf::Font& fuente, std::string textoStr, 
-          sf::Color normal, sf::Color colHover, sf::Color click) : texto(fuente){
-        caja.setPosition({x, y});
-        caja.setSize({ancho, alto});
-        colorNormal = normal;
-        colorHover = colHover;
-        colorClick = click;
-        caja.setFillColor(colorNormal);
-        caja.setOutlineColor(sf::Color(140, 50, 30)); // Borde óxido/naranja oscuro
-        caja.setOutlineThickness(2.0f);
+    public:
+        int getId() const { return id; }
+        void setId(int nuevoId) { id = nuevoId; }
 
-        texto.setString(textoStr);
-        texto.setCharacterSize(16);
-        texto.setFillColor(sf::Color(240, 235, 225)); // Texto claro/crema
-        
-        // Centrar texto en el botón
-        sf::FloatRect bounds = texto.getLocalBounds();
-        texto.setOrigin({bounds.position.x + bounds.size.x/2.0f, bounds.position.y + bounds.size.y/2.0f});
-        texto.setPosition({x + ancho/2.0f, y + alto/2.0f});
-        
-        this->hover = false;
-    }
+        Boton(float x, float y, float ancho, float alto, std::string rutaTextura);
+        Boton();
 
-    void actualizar(sf::Vector2f posMouse, bool forzado = false) {
-        if (forzado || caja.getGlobalBounds().contains(posMouse)) {
-            hover = true;
-            caja.setFillColor(colorHover);
-            caja.setOutlineColor(sf::Color(230, 140, 40)); // Borde naranja brillante en hover
-            texto.setFillColor(sf::Color(255, 215, 0)); // Texto dorado en hover
-        } else {
-            hover = false;
-            caja.setFillColor(colorNormal);
-            caja.setOutlineColor(sf::Color(140, 50, 30)); // Borde óxido normal
-            texto.setFillColor(sf::Color(240, 235, 225)); // Texto normal
-        }
-    }
+        void actualizar(float deltaTime, const sf::RenderWindow& ventana);
 
-    void setTextoPosicion(float x, float y) {
-        sf::FloatRect bounds = texto.getLocalBounds();
-        texto.setOrigin({bounds.position.x + bounds.size.x/2.0f, bounds.position.y + bounds.size.y/2.0f});
-        texto.setPosition({x, y});
-    }
+        bool estaPresionado();
 
-    void dibujar(sf::RenderWindow& ventana) {
-        ventana.draw(caja);
-        ventana.draw(texto);
-    }
+        bool estaHover(const sf::RenderWindow& ventana);
 
-    bool fueClickeado(sf::Vector2f posMouse, sf::Mouse::Button boton) {
-        return hover && boton == sf::Mouse::Button::Left;
-    }
 
-    sf::FloatRect getGlobalBounds() const {
-        return caja.getGlobalBounds();
-    }
+        // ----- Iniciar Configuración del Botón -----
 
-    sf::RectangleShape& getCaja() {
-        return caja;
-    }
+
+        // ----- Getters y Setters -----
+        bool getEstaHover() const { return hover; }
+        bool getEstaPresionado() const { return presionado; }
 
 };
+

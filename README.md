@@ -13,7 +13,7 @@ g++ src/main.cpp src/Juego.cpp src/Personaje.cpp src/ObjetoGrafico.cpp src/Entid
 
 g++ -std=c++20 -Iinclude src/*.cpp -o build/NuevoMenu.exe -lsfml-graphics -lsfml-window -lsfml-system
 
-g++ -std=c++20 -Iinclude src/main.cpp src/Juego.cpp src/MenuPrincipal.cpp src/Gameplay.cpp -o build/NuevoMenu.exe -lsfml-graphics -lsfml-window -lsfml-system
+g++ -std=c++20 -Iinclude src/main.cpp src/Juego.cpp src/MenuPrincipal.cpp src/Gameplay.cpp src/boton.cpp src/ObjetoGrafico.cpp -o build/NuevoMenu.exe -lsfml-graphics -lsfml-window -lsfml-system
 
 # ejecuta
 .\build\juego.exe

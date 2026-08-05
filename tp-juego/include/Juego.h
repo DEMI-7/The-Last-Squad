@@ -7,6 +7,7 @@ class Juego {
     private:
         sf::RenderWindow ventana;
         Pantalla* pantallaActual;
+        sf::View vista;
 
     public:
         Juego();
