@@ -19,10 +19,14 @@ Boton::Boton(float x, float y, float ancho, float alto, std::string rutaTextura)
 
     hover = false;
     presionado = false;
+    mouseEstabaPresionado = false;
 }
 
 Boton::Boton(){
-
+    id = -1;
+    hover = false;
+    presionado = false;
+    mouseEstabaPresionado = false;
 }
 
 bool Boton::estaHover(const sf::RenderWindow& ventana) {
@@ -55,4 +59,12 @@ void Boton::actualizar(float deltaTime, const sf::RenderWindow& ventana) {
     } else {
         seleccionarSprite(0, 0); // Cambiar a la primera columna del sprite (normal)
     }
+}
+
+bool Boton::fueClickeado() {
+    bool mousePresionado = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+
+    bool clic = hover && mousePresionado && !mouseEstabaPresionado;
+    mouseEstabaPresionado = mousePresionado;
+    return clic;
 }

@@ -31,8 +31,8 @@ void MenuPrincipal::manejarEventos(const sf::Event& evento) {
         }
     }
 
-    if (botonJugar.getEstaPresionado()) {
-        std::cout << "Botón Jugar presionado" << std::endl;
+    if (botonJugar.fueClickeado()) {
+        std::cout << "Botón Jugar clickeado" << std::endl;
         juego->cambiarPantalla(new MenuSeleccionPersonaje(juego));
     }
 }

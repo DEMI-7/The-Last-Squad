@@ -13,8 +13,8 @@ MenuSeleccionPersonaje::MenuSeleccionPersonaje(Juego* juego) : Pantalla(juego){
 }
 
 void MenuSeleccionPersonaje::manejarEventos(const sf::Event&) {
-    if (botonEjemplo.getEstaPresionado()) {
-        std::cout << "Botón Jugar presionado" << std::endl;
+    if (botonEjemplo.fueClickeado()) {
+        std::cout << "Botón ejemplo clickeado" << std::endl;
         juego->cambiarPantalla(new MenuPrincipal(juego));
     }
 }

@@ -8,6 +8,8 @@ class Boton : public ObjetoGrafico {
         bool hover;
         bool presionado;
 
+        bool mouseEstabaPresionado;
+
     public:
         int getId() const { return id; }
         void setId(int nuevoId) { id = nuevoId; }
@@ -20,6 +22,8 @@ class Boton : public ObjetoGrafico {
         bool estaPresionado();
 
         bool estaHover(const sf::RenderWindow& ventana);
+
+        bool fueClickeado();
 
 
         // ----- Iniciar Configuración del Botón -----
