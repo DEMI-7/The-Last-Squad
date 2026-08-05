@@ -1,6 +1,7 @@
 #include "../include/MenuPrincipal.h"
 #include "../include/Juego.h"
 #include "../include/Gameplay.h"
+#include "../include/MenuSeleccionPersonaje.h"
 
 #include <iostream>
 
@@ -32,7 +33,7 @@ void MenuPrincipal::manejarEventos(const sf::Event& evento) {
 
     if (botonJugar.getEstaPresionado()) {
         std::cout << "Botón Jugar presionado" << std::endl;
-        juego->cambiarPantalla(new Gameplay(juego));
+        juego->cambiarPantalla(new MenuSeleccionPersonaje(juego));
     }
 }
 
