@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include "Personaje.h"
+#include <vector>
 
 
 struct RegistroPersonaje {
@@ -38,4 +39,6 @@ public:
     //void entregarPersonaje(std::vector<Arma>& inventario, int idArma);
 
     void listar();
+
+    std::vector<RegistroPersonaje> devolverVectorPersonajes();
 };

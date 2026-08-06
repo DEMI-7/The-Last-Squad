@@ -15,4 +15,6 @@ class MenuSeleccionPersonaje : public Pantalla {
     private:
 
     Boton botonEjemplo;
+
+    std::vector<Boton> vectorBotones;
 };

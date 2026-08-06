@@ -147,3 +147,26 @@ void archivoPersonaje::entregarArma(std::vector<Arma>& inventario, int idArma) {
     inventario.emplace_back(registro.id, registro.nombre, registro.cadencia, registro.danio, registro.alcance, registro.costo, registro.municionMaxima, registro.tamanioCargador);
 }
 */
+
+std::vector<RegistroPersonaje> archivoPersonaje::devolverVectorPersonajes() {
+    std::vector<RegistroPersonaje> vectorRegistros;
+
+    RegistroPersonaje objeto;
+
+    FILE *pPersonaje;
+
+    pPersonaje = fopen (_nombre,"rb");
+
+    if(pPersonaje == nullptr){
+        std::cout << "ERROR DE ARCHIVO" << std::endl;
+        return vectorRegistros;
+    }
+
+    while (fread (&objeto, sizeof (objeto), 1, pPersonaje) != 0) {
+        vectorRegistros.push_back(objeto);
+    }
+
+    fclose (pPersonaje);
+    
+    return vectorRegistros;
+}
