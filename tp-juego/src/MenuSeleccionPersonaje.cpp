@@ -25,11 +25,21 @@ MenuSeleccionPersonaje::MenuSeleccionPersonaje(Juego* juego) : Pantalla(juego){
 
     std::vector<RegistroPersonaje> registroPers = archivo.devolverVectorPersonajes();
     int indice = 0;
+    int x = 300;
+    int y = 540;
+
+    vectorBotones.resize(registroPers.size());
+
     for (auto& boton : vectorBotones) {
         boton.cargarTextura("assets/personajes/icon_" + std::to_string(registroPers[indice].id)+".png");
         indice++;
+        boton.setearTamanioSprite(1254, 1254);
+        boton.centrarOrigen();
+        boton.escalarSprite(0.2f,0.2f);
+        boton.ajustarHitboxAlSprite();
+        boton.setPosicionCentrado(x, y);
+        x += 300; // Ajusta la posición horizontal para el siguiente botón
     }
-
 }
 
 void MenuSeleccionPersonaje::manejarEventos(const sf::Event&) {
@@ -40,9 +50,16 @@ void MenuSeleccionPersonaje::manejarEventos(const sf::Event&) {
 }
 
 void MenuSeleccionPersonaje::actualizar(float deltaTime) {
-    botonEjemplo.actualizar(deltaTime, juego->getVentana());
+    //botonEjemplo.actualizar(deltaTime, juego->getVentana());
+
+    for (auto& boton : vectorBotones) {
+        boton.actualizar(deltaTime, juego->getVentana());
+    }
 }
 
 void MenuSeleccionPersonaje::dibujar(sf::RenderWindow& ventana) {
-    botonEjemplo.dibujar(ventana);
+    //botonEjemplo.dibujar(ventana);
+    for (auto& boton : vectorBotones) {
+        boton.dibujar(ventana);
+    }
 }
