@@ -11,17 +11,6 @@
 
 MenuSeleccionPersonaje::MenuSeleccionPersonaje(Juego* juego) : Pantalla(juego){
     archivoPersonaje archivo("personajes.dat");
-    //RegistroPersonaje registroPers = archivo.traerRegistro(0);
-    //std::cout<<registroPers.nombre<<std::endl;
-
-    /*
-    botonEjemplo.cargarTextura("assets/personajes/icon_" + std::to_string(registroPers.id) + ".png");
-    botonEjemplo.setearTamanioSprite(1254, 1254);
-    botonEjemplo.centrarOrigen();
-    botonEjemplo.escalarSprite(0.2f,0.2f);
-    botonEjemplo.ajustarHitboxAlSprite();
-    botonEjemplo.setPosicionCentrado(500,500);
-    */
 
     std::vector<RegistroPersonaje> registroPers = archivo.devolverVectorPersonajes();
     int indice = 0;

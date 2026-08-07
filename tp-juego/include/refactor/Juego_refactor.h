@@ -93,36 +93,6 @@ private:
   std::optional<Boton> btnMenuJugar;
   std::optional<Boton> btnMenuStats;
   std::optional<Boton> btnMenuSalir;
-  
-
-  
-  // Selección personaje
-  struct BotonPersonaje {
-      Boton boton;
-      RegistroPersonaje registro;
-      sf::Texture textura;
-      sf::Sprite sprite;
-
-      BotonPersonaje(const Boton& botonBase, const sf::Texture& texturaBase, const RegistroPersonaje& registroBase)
-                    : textura(texturaBase), sprite(textura), boton(botonBase), registro(registroBase) {
-
-            sf::Vector2u texSize = textura.getSize();
-            int frameW = texSize.x;
-            int frameH = texSize.y;
-            sprite.setTextureRect(sf::IntRect({0, 0}, {frameW, frameH}));
-            // Escala adaptativa para que quepa bien en la tarjeta
-            float scale = 90.f / frameH;
-            if (scale > 3.0f) {
-                scale = 3.0f;
-            }
-            sprite.setScale({scale, scale});
-            sprite.setOrigin({frameW / 2.f, frameH / 2.f});
-            sprite.setPosition({boton.getCaja().getPosition().x + 70.f, boton.getCaja().getPosition().y + boton.getCaja().getSize().y / 2.f}); // A la izquierda del recuadro
-            
-
-      }
-  };
-  
 
   std::vector<BotonPersonaje> botonesPersonajes;
   std::optional<Boton> btnVolverSeleccion;
