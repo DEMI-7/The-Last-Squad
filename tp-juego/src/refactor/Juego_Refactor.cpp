@@ -143,16 +143,6 @@ void Juego::actualizar() {
       ventana.setMouseCursorVisible(false);
   }
 
-  if (estadoActual == EstadoJuego::MenuPrincipal) {
-      actualizarMenu(posMouse);
-  }
-  else if (estadoActual == EstadoJuego::Estadisticas) {
-      actualizarEstadisticas(posMouse);
-  }
-  else if (estadoActual == EstadoJuego::SeleccionPersonaje) {
-      actualizarSeleccionPersonaje(posMouse);
-  }
-  else if (estadoActual == EstadoJuego::Jugando) {
       std::vector<sf::FloatRect> hitboxesZombies = zombieManager.getHitboxesZombies();
 
       if (jugador.estaVivo()) {
@@ -220,12 +210,6 @@ void Juego::actualizar() {
       ventana.setView(vista);
 
       hud.actualizar(jugador, zombieManager);
-  }
-  else if (estadoActual == EstadoJuego::GameOver) {
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
-          estadoActual = EstadoJuego::MenuPrincipal;
-      }
-  }
 }
 
 void Juego::renderizar() {
