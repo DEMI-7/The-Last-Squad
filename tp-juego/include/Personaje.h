@@ -2,11 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include "Entidad.h"
-#include "Arma.h"
-#include "ObjetoMapa.h"
-#include "Proyectil.h"
-#include "archivoArma.h"
-#include "Mina.h"
 
 
 class Personaje : public Entidad {
@@ -23,27 +18,8 @@ private:
     sf::Vector2f posicionAnterior;
     float movimientoX;
     float movimientoY;
-
-    // Arma equipada del jugador
-    std::vector<Arma> inventarioArmas;
-    int armaEquipada; // Índice del arma actualmente equipada en el inventario
-
-    float tiempoHabilidad; //tiempo desde que se activo la habilidad
-    bool habilidadActivada;
-    bool habilidadDisponible;
-    float multiplicadorZoom;
-    
-    sf::FloatRect zonaHabilidad;
-    bool dashActivado;
-    bool invulnerabilidad = false;
-
-    int dinero;
     
     // ----- FUNCIONES PRIVADAS -----
-    void actualizarZonaHabilidad();
-
-    void calcularDireccion(sf::Vector2f posicionMouse);
-
     void guardarPosicionAnterior();
 
     void volverPosicionAnteriorX();
@@ -57,22 +33,6 @@ private:
     float getMovimientoY() const;
 
     void setVelocidad(float velocidad);
-
-    void elegirArma();
-    
-    void activarHabilidad(float deltaTime, std::vector<Mina> &trampas);
-
-    void habilidadRecon(float deltaTime);
-
-    void habilidadJoel();
-
-    void habilidadGhost();
-
-    void habilidadJohnWick();
-
-    void habilidadSoldado(std::vector<Mina> &trampas);
-
-    void desbloqueoArmas();
     
     public:
     // ------ FUNCIONES PUBLICAS ------
@@ -80,34 +40,6 @@ private:
     
     Personaje(int id, int idArmaEspecial, std::string nombre, float vida, float armadura, float velocidad, float cooldownHabilidad);
     
-    virtual void actualizar(float deltaTime, const std::vector<ObjetoMapa>& obstaculos, const std::vector<sf::FloatRect>& hitboxZombies, const sf::Vector2f &posicionMouse, std::vector<Mina> &trampas, const sf::Vector2f &limMapa);
-    
-    Arma& getArma();
-    
-    float getMultiplicadorZoom();
-    
-    float getArmaduraActual() const { return armaduraActual; }
-    void setArmaduraActual(float a) { armaduraActual = a; }
-    
-    float getArmaduraMax() const { return armaduraMax; }
-    void setArmaEquipada(int index) { if(index >= 0 && index < 5) armaEquipada = index; }
-    
-    sf::FloatRect getZonaHabilidad() const;
+    //virtual void actualizar(float deltaTime, const std::vector<sf::FloatRect>& obstaculos, const std::vector<sf::FloatRect>& hitboxZombies, const sf::Vector2f &posicionMouse);
 
-    int getDireccion() const;
-
-    bool habilidadActiva() const;
-    float getTiempoHabilidad() const { return tiempoHabilidad; }
-    float getCooldownHabilidad() const { return cooldownHabilidad; }
-    bool getHabilidadDisponible() const { return habilidadDisponible; }
-    
-    void recibirDanio(float cantidad) override;
-
-    int getId()const{ return idPersonaje;}
-
-    bool esInvulnerable() const {return invulnerabilidad;}
-
-    int getDinero() const {return dinero;}
-
-    void sumarDinero(int dinero);
 };

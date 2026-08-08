@@ -1,5 +1,5 @@
 #include "../include/Arma.h"
-#include "../include/SoundManager.h"
+//#include "../include/SoundManager.h"
 #include <cmath>
 #include <iostream>
 
@@ -85,42 +85,42 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
                 case 0: { //cuchillo
                     proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
                     municionEnCargador = 2;
-                    SoundManager::play("cuchillo_aire");
+                    //SoundManager::play("cuchillo_aire");
                     break;
                 }
 
                 case 2:
                 { // Escopeta
                     disparoEscopeta(deltaX, deltaY, proyectiles, texturaProyectil);
-                    SoundManager::play("disparo_escopeta");
+                    //SoundManager::play("disparo_escopeta");
                     break;
                 }
 
                 case 4: {
                     //mosin
                     disparoMosin();
-                    SoundManager::play("rifle");
+                    //SoundManager::play("rifle");
                     break;
                 }
                 case 5: {
                     //arco
                     proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
                     municionEnCargador = 2;
-                    SoundManager::play("flecha");
+                    //SoundManager::play("flecha");
                     break;
                 }
                 case 6: {
                     // akimbo revolver
                     proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
                     proyectiles.emplace_back(texturaProyectil, sf::Vector2f(getPosicion().x, getPosicion().y-10), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
-                    SoundManager::play("pistola");
+                    //SoundManager::play("pistola");
                     break;
                 }
                 case 7: {
                     // katana
                     proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
                     municionEnCargador = 2;
-                    SoundManager::play("cuchillo_aire");
+                    //SoundManager::play("cuchillo_aire");
                     break;
                 }
                 
@@ -128,9 +128,9 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
                 {
                     proyectiles.emplace_back(texturaProyectil, getPosicion(), posicionMouse, getAlcance(), 2000.f, getDanio(),idArma);
                     if (getNombre() == "rifle" || getNombre() == "fal") {
-                        SoundManager::play("rifle");
+                        //SoundManager::play("rifle");
                     } else {
-                        SoundManager::play("pistola");
+                        //SoundManager::play("pistola");
                     }
                     break;
                 }
@@ -161,6 +161,7 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
             enRecarga = true;
 
             // Reproducir sonido de recarga adecuado
+            /*
             if (idArma == 2) {
                 SoundManager::play("recargar_scopeta");
             } else if (idArma == 4 || getNombre() == "rifle" || getNombre() == "fal") {
@@ -170,6 +171,7 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
             } else {
                 SoundManager::play("recargar_pistola");
             }
+            */
 
             std::cout << "Recarga ejecutada con " << getNombre() << ". Munición en restante: " << municionActual << std::endl;
         }

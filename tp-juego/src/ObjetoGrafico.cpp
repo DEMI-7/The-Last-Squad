@@ -32,6 +32,7 @@ void ObjetoGrafico::cargarTextura(const std::string& rutaTextura)
         std::cout << "Error al cargar la textura desde: " << rutaTextura << std::endl;
     }
 
+    std::cout << "Textura cargada correctamente desde: " << rutaTextura << std::endl;
     sprite.setTextureRect(sf::IntRect({ 0, 0 }, { static_cast<int>(textura.getSize().x), static_cast<int>(textura.getSize().y) }));
 }
 

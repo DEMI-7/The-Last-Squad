@@ -12,15 +12,6 @@
 #include <string>
 #include <optional>
 
-enum class EstadoJuego { 
-    MenuPrincipal,
-    Estadisticas,
-    SeleccionPersonaje,
-    Jugando,
-    GameOver
-};
-
-
 class Estadistica {
 private:
     int _partidasJugadas;
@@ -79,33 +70,6 @@ private:
 
   Puntero mira;
 
-  // ELEMENTOS DE MENÚ Y MÁQUINA DE ESTADOS
-  EstadoJuego estadoActual;
-  sf::Font fuenteMenu;
-  sf::Text tituloJuego;
-  
-  // Fondo personalizado
-  sf::Texture texturaFondoMenu;
-  sf::Sprite spriteFondoMenu;
-  bool tieneFondoMenu;
-  
-  // Botones menú principal
-  std::optional<Boton> btnMenuJugar;
-  std::optional<Boton> btnMenuStats;
-  std::optional<Boton> btnMenuSalir;
-
-  std::vector<BotonPersonaje> botonesPersonajes;
-  std::optional<Boton> btnVolverSeleccion;
-  
-  RegistroPersonaje personajeSeleccionado;
-
-  // Estadísticas
-  Estadistica statsHistoricas;
-  sf::Text textoStats;
-  std::optional<Boton> btnVolverStats;
-  
-  int indiceMenuSeleccionado;
-
   void procesarEventos();
   void actualizar();
   void renderizar();
@@ -116,22 +80,6 @@ private:
   sf::RectangleShape trazaMosin;
   bool mostrarTrazaMosin = false;
   float tiempoTrazaMosin = 0.f;
-
-  // Métodos del Menú
-  void inicializarMenus();
-  void actualizarMenu(sf::Vector2f posMouse);
-  void renderizarMenu();
-  
-  void actualizarEstadisticas(sf::Vector2f posMouse);
-  void renderizarEstadisticas();
-
-  void actualizarSeleccionPersonaje(sf::Vector2f posMouse);
-  void renderizarSeleccionPersonaje();
-  void iniciarPartidaDirecta();
-  
-  // Guardar y Cargar Estadísticas
-  void guardarStats();
-  void cargarStats();
 
 public:
   Juego();

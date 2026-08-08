@@ -1,27 +1,5 @@
 #include"../include/Boton.h"
 
-Boton::Boton(float x, float y, float ancho, float alto, std::string rutaTextura) : ObjetoGrafico(rutaTextura) {
-    
-    setPosicion(x, y);
-    //setearTamanioSprite(ancho, alto);
-    //centrarOrigen();
-
-    /*
-    texto.setString(textoString);
-    texto.setCharacterSize(16);
-    texto.setFillColor(sf::Color::White);
-    
-    // Centrar el texto en el botón
-    sf::FloatRect bounds = texto.getLocalBounds();
-    texto.setOrigin({bounds.position.x + bounds.size.x/2.0f, bounds.position.y + bounds.size.y/2.0f});
-    texto.setPosition({x + ancho/2.0f, y + alto/2.0f});
-    */
-
-    hover = false;
-    presionado = false;
-    mouseEstabaPresionado = false;
-}
-
 Boton::Boton(){
     id = -1;
     hover = false;

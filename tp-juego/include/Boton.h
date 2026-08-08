@@ -14,7 +14,6 @@ class Boton : public ObjetoGrafico {
         int getId() const { return id; }
         void setId(int nuevoId) { id = nuevoId; }
 
-        Boton(float x, float y, float ancho, float alto, std::string rutaTextura);
         Boton();
 
         void actualizar(float deltaTime, const sf::RenderWindow& ventana);
