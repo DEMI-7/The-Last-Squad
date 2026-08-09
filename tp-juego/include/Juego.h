@@ -14,4 +14,5 @@ class Juego {
         void ejecutar();
         void cambiarPantalla(Pantalla* pantalla);
         sf::RenderWindow& getVentana();
+        sf::View& getVista() {return vista;}
 };

@@ -67,4 +67,7 @@ protected:
     sf::FloatRect getHitbox() const;
     void ajustarHitboxAlSprite();
 
+
+public:
+    void setHitboxVisible() {mostrarHitbox = true;}
 };

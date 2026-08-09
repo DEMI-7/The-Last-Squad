@@ -1,59 +1,38 @@
 #pragma once
-#include <SFML/Graphics.hpp>
-#include <string>
-#include <vector>
-#include "Proyectil.h"
+#include "ObjetoGrafico.h"
+
 
 class Arma : public ObjetoGrafico {
-private:
-    int idArma;
-    std::string nombre;
-    
-    float tiempoDesdeUltimoDisparo;
-    float tiempoRecarga;
-    bool enRecarga;
+    private:
+        int idArma;
+        std::string nombre;
 
-    float cadencia;
-    float danio;
-    float alcance;
-    float costo;
-    int municionMaxima;
-    int tamanioCargador;
+        float cadencia;
+        float danio;
+        float alcance;
+        float costo;
 
-    int municionActual;
-    int municionEnCargador;
-    bool desbloqueada;
-    
-    void disparoEscopeta(float deltaX, float deltaY, std::vector<Proyectil>& proyectiles, sf::Texture& texturaProyectil);
-    void disparoMosin();
-    
+        int municionMaxima;
+        int tamanioCargador;
+
+        float deltaTime;
+
+        bool desbloqueada;
+
+        float tiempoDesdeUltimoDisparo;
+        float tiempoRecarga;
+        bool enRecarga;
+
+
+        void disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador);
+
     public:
-    bool spawnRayCast;
-    Arma();
-    Arma(int id, std::string nombre, float cadencia, float danio, float alcance, float costo, int municionMaxima, int tamanioCargador);
+        Arma(int id, std::string nombre, float cadencia, float danio, float alcance, float costo, int municionMaxima, int tamanioCargador);
 
-    virtual void actualizar(float deltaTime, const sf::Vector2f &posicionMouse, const sf::Vector2f& posicionJugador, 
-        std::vector<Proyectil>& proyectiles, sf::Texture& texturaProyectil);
+        void actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador);
 
-    // Getters y Setters
-    int getIdArma() const;
-    std::string getNombre() const;
-    float getDanio() const;
-    float getAlcance() const;
-    float getCosto() const {return costo;};
+        // Un id de -1 indica un arma no disponible
+        bool estaDisponible() const { return desbloqueada;}
 
-    void setDesbloqueo(bool estado);
-    void llenarMunicion();
-    void recargar(int cantidad);
-    void comprarMunicion(int cantidad);
-
-    int getMunicionActual() const { return municionActual; }
-    int getMunicionEnCargador() const { return municionEnCargador; }
-    int getTamanioCargador() const { return tamanioCargador; }
-    int getMunicionMaxima() const { return municionMaxima; }
-
-    bool getEnRecarga() const { return enRecarga; }
-    bool getEstadoDesbloqueo() const { return desbloqueada; }
-
-    bool estaDisponible() const; // Verifica si el arma está disponible para ser equipada
+        void setDesbloqueo(bool estado) {desbloqueada = estado;}
 };

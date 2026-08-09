@@ -3,6 +3,7 @@
 ObjetoMapa::ObjetoMapa()
 {
     solido = true;
+    mostrarHitbox = true;
 }
 
 void ObjetoMapa::setSolido(bool estado)

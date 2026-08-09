@@ -1,6 +1,7 @@
 #pragma once
 #include "Pantalla.h"
 #include "Personaje.h"
+#include "ObjetoMapa.h"
 
 class Gameplay : public Pantalla {
     public:
@@ -12,12 +13,15 @@ class Gameplay : public Pantalla {
 
         void dibujar(sf::RenderWindow&) override;
 
+        void inicializarObstaculos(std::vector<ObjetoMapa> &vectorObjetosMapa);
+
     private:
 
     Personaje jugador;
 
     //---- Vectores de elementos del juego ----
-    std::vector<sf::FloatRect> obstaculosHitbox;
+    std::vector<ObjetoMapa> vectorObjetosMapa;
+    std::vector<sf::FloatRect> vectorObjetosMapaHitbox;
     std::vector<sf::FloatRect> hitboxZombies;
 
 };

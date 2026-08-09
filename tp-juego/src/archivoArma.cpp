@@ -132,16 +132,45 @@ void archivoArma::listar() {
     fclose (pArma);
 }
 
+
+RegistroArma archivoArma::entregarArma(int idArma){
+    RegistroArma registro;
+
+    int posicion = 0;
+
+    FILE *pArma = fopen(_nombre, "rb");
+
+    if(pArma == nullptr) {
+        std::cout << "ERROR DE ARCHIVO" << std::endl;
+        return registro;
+    }
+
+    while (fread (&registro, sizeof (registro), 1, pArma) == 1) {
+        if (idArma == registro.id) {
+            fclose(pArma);
+            return registro;
+        }
+        posicion++;
+    }
+
+    fclose(pArma);
+
+    return registro;
+}
+
+
+/*
 void archivoArma::entregarArma(std::vector<Arma>& inventario, int idArma) {
     int posicion = buscarArma(idArma);
-
+    
     if(posicion == -1) {
         std::cout << "ARMA NO ENCONTRADA" << std::endl;
         inventario.emplace_back(); // Agrega un arma vacía al inventario para mantener la consistencia
         return;
     }
-
+    
     RegistroArma registro = traerRegistro(posicion);
-
+    
     inventario.emplace_back(registro.id, registro.nombre, registro.cadencia, registro.danio, registro.alcance, registro.costo, registro.municionMaxima, registro.tamanioCargador);
 }
+*/

@@ -2,8 +2,6 @@
 
 #include <iostream>
 #include <cstring>
-#include "Arma.h"
-
 
 struct RegistroArma {
     int id;
@@ -37,7 +35,8 @@ public:
 
     RegistroArma traerRegistro (int posicion);
 
-    void entregarArma(std::vector<Arma>& inventario, int idArma);
+    //void entregarArma(std::vector<Arma>& inventario, int idArma);
+    RegistroArma entregarArma(int idArma);
 
     void listar();
 };

@@ -2,30 +2,7 @@
 //#include "../include/SoundManager.h"
 #include <cmath>
 
-Personaje::Personaje(){
-    idPersonaje = 0;
-    nombre = "Superviviente";
-    vidaMax = 1.f;
-    vidaActual = 1.f;
-    armaduraMax = 1.f;
-    armaduraActual = 1.f;
-    velocidad = 1.f;
-    habilidad = "-";
-    habilidadActivada = false;
-    armaEquipada = 0;
-}
-
 Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida, float armadura, float velocidad, float cooldownHabilidad) {
-    idPersonaje = id;
-    this->nombre = nombre;
-    vidaMax = vida;
-    vidaActual = vida;
-    armaduraMax = armadura;
-    armaduraActual = armadura;
-    this->velocidad = velocidad;
-    velocidadNormal = velocidad;
-    if (this->velocidad <= 0.f) this->velocidad = 200.f;
-    this->cooldownHabilidad = cooldownHabilidad;
     habilidad = "-";
     armaEquipada = 0;
     habilidadActivada = false;
@@ -33,17 +10,6 @@ Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida,
     habilidadDisponible = true;
     multiplicadorZoom = 1.f;
     dinero = 0;
-
-    mostrarHitbox = false;
-    //cargarTextura("assets/personajes/" + nombre + ".png");
-
-    escalarSprite(0.8f,0.8f);
-    
-    centrarOrigen();
-
-    setHitbox(13.f * 2.f, 16.f * 2.1f);
-    setPosicionCentrado(1720.f, 1080.f);
-    posicionAnterior = sf::Vector2f(1720.f, 1080.f);
 
     archivoArma archivo("armas.dat");
 
@@ -55,91 +21,16 @@ Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida,
     archivo.entregarArma(inventarioArmas, idArmaEspecial);
 
     inventarioArmas[0].setDesbloqueo(true);
-    /*
     inventarioArmas[1].setDesbloqueo(true);
     inventarioArmas[2].setDesbloqueo(true);
     inventarioArmas[3].setDesbloqueo(true);
     inventarioArmas[4].setDesbloqueo(true);
-    */
 
     zonaHabilidad = sf::FloatRect({0 , 0}, {0, 0});
 }
 
-void Personaje::guardarPosicionAnterior() { posicionAnterior = getPosicion(); }
-
-void Personaje::volverPosicionAnteriorX() {
-  setPosicionCentrado(posicionAnterior.x, getPosicion().y);
-}
-
-void Personaje::volverPosicionAnteriorY() {
-  setPosicionCentrado(getPosicion().x, posicionAnterior.y);
-}
-
 void Personaje::actualizar(float deltaTime, const std::vector<sf::FloatRect>& obstaculos, const std::vector<sf::FloatRect> &hitboxZombies, const sf::Vector2f &posicionMouse) {
     // logica adicional para el personaje, como animaciones o habilidades
-    
-    movimientoX = 0.f;
-    movimientoY = 0.f;
-    
-    float movimiento = velocidad * deltaTime;
-    
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-        movimientoX -= movimiento;
-    }
-    
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-        movimientoX += movimiento;
-    }
-    
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-        movimientoY -= movimiento;
-    }
-    
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-        movimientoY += movimiento;
-    }
-    
-    // movimiento horizontal jugador, chequeo de colisiones mediante bucle for
-    guardarPosicionAnterior();
-    mover(getMovimientoX(), 0.f);
-    bool colisionoX = false;
-    for(auto& obstaculo : obstaculos) {
-        if (getHitbox().findIntersection(obstaculo)) {
-            volverPosicionAnteriorX();
-            colisionoX = true;
-            break;
-        }
-    }
-    if (!colisionoX) {
-        for(const auto& rect : hitboxZombies) {
-            if (getHitbox().findIntersection(rect) && !esInvulnerable()) {
-                volverPosicionAnteriorX();
-                colisionoX = true;
-                break;
-            }
-        }
-    }
-    
-    // movimiento vertical jugador
-    guardarPosicionAnterior();
-    mover(0.f, getMovimientoY());
-    bool colisionoY = false;
-    for(auto& obstaculo : obstaculos) {
-        if (getHitbox().findIntersection(obstaculo)) {
-            volverPosicionAnteriorY();
-            colisionoY = true;
-            break;
-        }
-    }
-    if (!colisionoY) {
-        for(const auto& rect : hitboxZombies) {
-            if (getHitbox().findIntersection(rect) && !esInvulnerable()) {
-                volverPosicionAnteriorY();
-                colisionoY = true;
-                break;
-            }
-        }
-    }
     
     elegirArma();
 
@@ -150,8 +41,51 @@ void Personaje::actualizar(float deltaTime, const std::vector<sf::FloatRect>& ob
     tiempoHabilidad += deltaTime;
     //activarHabilidad(deltaTime, trampas);
     activarHabilidad(deltaTime);
-
+    
     desbloqueoArmas();
+}
+
+void Personaje::elegirArma() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) {
+        armaEquipada = 0;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2) && inventarioArmas[1].estaDisponible()) {
+        armaEquipada = 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3) && inventarioArmas[2].estaDisponible()) {
+        armaEquipada = 2;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4) && inventarioArmas[3].estaDisponible()) {
+        armaEquipada = 3;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5) && inventarioArmas[4].estaDisponible()) {
+        armaEquipada = 4;
+    }
+}
+
+// -------- desbloqueo de armas --------
+
+void Personaje::desbloqueoArmas() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2) && !inventarioArmas[1].estaDisponible() && inventarioArmas[1].getCosto() <= dinero) {
+        inventarioArmas[1].setDesbloqueo(true);
+        dinero -= inventarioArmas[1].getCosto();
+        armaEquipada = 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3) && !inventarioArmas[2].estaDisponible() && inventarioArmas[2].getCosto() <= dinero) {
+        inventarioArmas[2].setDesbloqueo(true);
+        dinero -= inventarioArmas[2].getCosto();
+        armaEquipada = 2;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4) && !inventarioArmas[3].estaDisponible() && inventarioArmas[3].getCosto() <= dinero) {
+        inventarioArmas[3].setDesbloqueo(true);
+        dinero -= inventarioArmas[3].getCosto();
+        armaEquipada = 3;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5) && !inventarioArmas[4].estaDisponible() && inventarioArmas[4].getCosto() <= dinero) {
+        inventarioArmas[4].setDesbloqueo(true);
+        dinero -= inventarioArmas[4].getCosto();
+        armaEquipada = 4;
+    }
 }
 
 void Personaje::actualizarZonaHabilidad(){
@@ -203,23 +137,6 @@ void Personaje::calcularDireccion(sf::Vector2f posicionMouse) {
 }
 
 
-void Personaje::elegirArma() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) {
-        armaEquipada = 0;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2) && inventarioArmas[1].estaDisponible()) {
-        armaEquipada = 1;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3) && inventarioArmas[2].estaDisponible()) {
-        armaEquipada = 2;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4) && inventarioArmas[3].estaDisponible()) {
-        armaEquipada = 3;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5) && inventarioArmas[4].estaDisponible()) {
-        armaEquipada = 4;
-    }
-}
 
 void Personaje::recibirDanio(float cantidad) {
     if (armaduraActual > 0) {
@@ -370,14 +287,8 @@ void Personaje::habilidadRecon(float deltaTime) {
 }
 
 // --------------- GETTERS SETTERS ----------------
-float Personaje::getMovimientoX() const { return movimientoX; }
 
-float Personaje::getMovimientoY() const { return movimientoY; }
 
-// devuelve el arma así se actualiza en la clase juego
-Arma& Personaje::getArma() {
-    return inventarioArmas[armaEquipada];
-}
 
 void Personaje::setVelocidad(float velocidad){
     this->velocidad = velocidad;
@@ -403,27 +314,68 @@ void Personaje::sumarDinero(int dinero){
     this->dinero += dinero;
 }
 
-// -------- desbloqueo de armas --------
-
-void Personaje::desbloqueoArmas() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2) && !inventarioArmas[1].estaDisponible() && inventarioArmas[1].getCosto() <= dinero) {
-        inventarioArmas[1].setDesbloqueo(true);
-        dinero -= inventarioArmas[1].getCosto();
-        armaEquipada = 1;
+void movimiento(){
+    movimientoX = 0.f;
+    movimientoY = 0.f;
+    
+    float movimiento = velocidad * deltaTime;
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+        movimientoX -= movimiento;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3) && !inventarioArmas[2].estaDisponible() && inventarioArmas[2].getCosto() <= dinero) {
-        inventarioArmas[2].setDesbloqueo(true);
-        dinero -= inventarioArmas[2].getCosto();
-        armaEquipada = 2;
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+        movimientoX += movimiento;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4) && !inventarioArmas[3].estaDisponible() && inventarioArmas[3].getCosto() <= dinero) {
-        inventarioArmas[3].setDesbloqueo(true);
-        dinero -= inventarioArmas[3].getCosto();
-        armaEquipada = 3;
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+        movimientoY -= movimiento;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5) && !inventarioArmas[4].estaDisponible() && inventarioArmas[4].getCosto() <= dinero) {
-        inventarioArmas[4].setDesbloqueo(true);
-        dinero -= inventarioArmas[4].getCosto();
-        armaEquipada = 4;
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+        movimientoY += movimiento;
+    }
+    
+    // ------------------COLISIONES-----------------------
+    // movimiento horizontal jugador, chequeo de colisiones mediante bucle for
+    guardarPosicionAnterior();
+    mover(getMovimientoX(), 0.f);
+    bool colisionoX = false;
+    for(auto& obstaculo : obstaculos) {
+        if (getHitbox().findIntersection(obstaculo)) {
+            volverPosicionAnteriorX();
+            colisionoX = true;
+            break;
+        }
+    }
+    if (!colisionoX) {
+        for(const auto& rect : hitboxZombies) {
+            if (getHitbox().findIntersection(rect) && !esInvulnerable()) {
+                volverPosicionAnteriorX();
+                colisionoX = true;
+                break;
+            }
+        }
+    }
+    
+    // movimiento vertical jugador
+    guardarPosicionAnterior();
+    mover(0.f, getMovimientoY());
+    bool colisionoY = false;
+    for(auto& obstaculo : obstaculos) {
+        if (getHitbox().findIntersection(obstaculo)) {
+            volverPosicionAnteriorY();
+            colisionoY = true;
+            break;
+        }
+    }
+    if (!colisionoY) {
+        for(const auto& rect : hitboxZombies) {
+            if (getHitbox().findIntersection(rect) && !esInvulnerable()) {
+                volverPosicionAnteriorY();
+                colisionoY = true;
+                break;
+            }
+        }
     }
 }
