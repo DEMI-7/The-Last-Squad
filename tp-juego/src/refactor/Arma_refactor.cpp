@@ -164,10 +164,6 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
         }
 }
 
-void Arma::recargar(int cantidad) {
-    municionEnCargador += cantidad;
-}
-
 // llena la municion actual
 void Arma::llenarMunicion() {
     municionActual = municionMaxima;

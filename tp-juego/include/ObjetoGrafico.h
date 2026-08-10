@@ -30,8 +30,8 @@ protected:
     
     public:
     
-    ObjetoGrafico(const std::string& rutaTextura);
     ObjetoGrafico();
+    ObjetoGrafico(const sf::Texture& texturaPrecargada);
 
     void cargarTextura(const std::string& rutaTextura);
     

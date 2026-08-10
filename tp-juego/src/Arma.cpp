@@ -13,6 +13,11 @@ Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcanc
     this->tamanioCargador = tamanioCargador;
     this->desbloqueada = false;
 
+    this->enRecarga = false;
+
+    this->municionActual = municionMaxima; // Empieza con la mitad de la munición total
+    this->municionEnCargador = tamanioCargador;
+
     std::string rutaTextura = "assets/armas/" + nombre + ".png";
     cargarTextura(rutaTextura);
     sf::FloatRect bounds = sprite.getLocalBounds();
@@ -40,6 +45,7 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
 
 
     disparar(posicionMouse, posicionJugador);
+    recargar();
 }
 
 void Arma::disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador) {
@@ -48,5 +54,44 @@ void Arma::disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posic
 
     if(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && tiempoDesdeUltimoDisparo >= cadencia && municionEnCargador > 0 && !enRecarga) {
         
+        
+        municionEnCargador--;
+        tiempoDesdeUltimoDisparo = 0.f;
     }
+}
+
+void Arma::recargar() {
+    // ----------------- Lógica de recarga
+        if (tiempoRecarga >= 1.f) {
+            enRecarga = false;
+        }
+
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && municionEnCargador < tamanioCargador && !enRecarga && municionActual > 0) {
+            int cantidad = 0;
+
+            if (municionActual >= (tamanioCargador - municionEnCargador)) {
+                cantidad = tamanioCargador - municionEnCargador;
+            } else {
+                cantidad = municionActual;
+            }
+            municionActual -= cantidad;
+
+            municionEnCargador += cantidad;
+
+            tiempoRecarga = 0.f;
+            enRecarga = true;
+
+            // Reproducir sonido de recarga adecuado
+            /*
+            if (idArma == 2) {
+                SoundManager::play("recargar_scopeta");
+            } else if (idArma == 4 || getNombre() == "rifle" || getNombre() == "fal") {
+                SoundManager::play("recargar_rifle");
+            } else if (idArma == 0 || idArma == 7 || idArma == 5) {
+                // cuchillo/katana/arco no recargan con sonido de arma de fuego
+            } else {
+                SoundManager::play("recargar_pistola");
+            }
+            */
+        }
 }

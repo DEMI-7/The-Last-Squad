@@ -1,14 +1,25 @@
 #include "../include/ObjetoGrafico.h"
 #include <iostream>
 
+/*
 ObjetoGrafico::ObjetoGrafico(const std::string& rutaTextura) : sprite(textura) {
     
-    if (!textura.loadFromFile(rutaTextura)) {
-        std::cout << "Error al cargar la textura desde: " << rutaTextura << std::endl;
-    }
+if (!textura.loadFromFile(rutaTextura)) {
+    std::cout << "Error al cargar la textura desde: " << rutaTextura << std::endl;
+}
 
-    sprite.setTextureRect(sf::IntRect({ 0, 0 }, { static_cast<int>(textura.getSize().x), static_cast<int>(textura.getSize().y) }));
+sprite.setTextureRect(sf::IntRect({ 0, 0 }, { static_cast<int>(textura.getSize().x), static_cast<int>(textura.getSize().y) }));
 
+//------------HITBOX------------
+mostrarHitbox = false;
+hitboxDebug.setFillColor(sf::Color::Transparent);
+hitboxDebug.setOutlineColor(sf::Color::Red);
+hitboxDebug.setOutlineThickness(2.f);
+angulo = 0.f;
+}
+*/
+
+ObjetoGrafico::ObjetoGrafico() : sprite(textura) {
     //------------HITBOX------------
     mostrarHitbox = false;
     hitboxDebug.setFillColor(sf::Color::Transparent);
@@ -17,7 +28,7 @@ ObjetoGrafico::ObjetoGrafico(const std::string& rutaTextura) : sprite(textura) {
     angulo = 0.f;
 }
 
-ObjetoGrafico::ObjetoGrafico() : sprite(textura) {
+ObjetoGrafico::ObjetoGrafico(const sf::Texture& texturaPrecargada) : sprite(texturaPrecargada){
     //------------HITBOX------------
     mostrarHitbox = false;
     hitboxDebug.setFillColor(sf::Color::Transparent);

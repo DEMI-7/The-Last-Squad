@@ -22,9 +22,12 @@ class Arma : public ObjetoGrafico {
         float tiempoDesdeUltimoDisparo;
         float tiempoRecarga;
         bool enRecarga;
+        int municionActual;
+        int municionEnCargador;
 
 
         void disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador);
+        void recargar();
 
     public:
         Arma(int id, std::string nombre, float cadencia, float danio, float alcance, float costo, int municionMaxima, int tamanioCargador);
