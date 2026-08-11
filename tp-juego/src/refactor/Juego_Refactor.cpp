@@ -133,6 +133,7 @@ void Juego::procesarEventos()
 void Juego::actualizar() {
   sf::Vector2f posMouse = ventana.mapPixelToCoords(sf::Mouse::getPosition(ventana), ventana.getDefaultView());
   
+
   // Actualizar siempre la mira para usarla como puntero con la vista correspondiente
   if (estadoActual == EstadoJuego::Jugando) {
       mira.actualizar(ventana, vista, deltaTime);
@@ -146,7 +147,7 @@ void Juego::actualizar() {
 
       if (jugador.estaVivo()) {
         jugador.actualizar(deltaTime, obstaculos, hitboxesZombies, mira.getPosicion(), trampas, sf::Vector2f(texturaMapa.getSize().x, texturaMapa.getSize().y));
-
+        
         // Lógica de compra automática de recarga si no le queda reserva al presionar 'R'
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && !jugador.getArma().getEnRecarga()) {
             Arma& armaActiva = jugador.getArma();
@@ -164,8 +165,13 @@ void Juego::actualizar() {
 
         jugador.getArma().actualizar(deltaTime, mira.getPosicion(), jugador.getPosicion(), proyectiles, texturaProyectil);
         vista.setSize({1280.f * jugador.getMultiplicadorZoom(), 720.f * jugador.getMultiplicadorZoom()});
-        
       } else {
+        // Registrar estadísticas de derrota
+        statsHistoricas.registrarNuevaPartida();
+        statsHistoricas.registrarOleadaMaxima(zombieManager.getOleadaActual());
+        statsHistoricas.sumarZombiesEliminados(zombieManager.getZombiesEliminados());
+        guardarStats();
+
         SoundManager::play("muerte");
         estadoActual = EstadoJuego::GameOver;
         ventana.setMouseCursorVisible(false);
@@ -207,38 +213,144 @@ void Juego::actualizar() {
 }
 
 void Juego::renderizar() {
-    ventana.clear();
-    ventana.setView(vista);
-    ventana.draw(spriteMapa);
+  ventana.clear();
 
-    for (auto &trampa : trampas) {
+  else if (estadoActual == EstadoJuego::Jugando) {
+      ventana.setView(vista);
+      ventana.draw(spriteMapa);
+
+      for (auto &trampa : trampas) {
         trampa.dibujar(ventana);
-    }
+      }
 
-    for (auto &obstaculo : obstaculos) {
+      for (auto &obstaculo : obstaculos) {
         obstaculo.dibujar(ventana);
-    }
+      }
 
-    for (auto &proyectil : proyectiles) {
+      for (auto &proyectil : proyectiles) {
         proyectil.dibujar(ventana);
-    }
+      }
 
-    if (mostrarTrazaMosin) {
+      if(mostrarTrazaMosin) {
         ventana.draw(trazaMosin);
-    }
-
-    if (jugador.estaVivo()) {
+      }
+      
+      if (jugador.estaVivo()) {
         jugador.dibujar(ventana);
         jugador.getArma().dibujar(ventana);
+      }
+
+      zombieManager.dibujarZombies(ventana);
+      mira.dibujar(ventana);
+      
+      ventana.setView(ventana.getDefaultView());
+      hud.dibujar(ventana);
+  }
+  ventana.display();
+}
+
+void Juego::actualizarEstadisticas(sf::Vector2f posMouse) {
+    static bool hoverVolver = false;
+    btnVolverStats->actualizar(posMouse);
+    bool currentHover = btnVolverStats->getGlobalBounds().contains(posMouse);
+    if (currentHover != hoverVolver && currentHover) {
+        SoundManager::play("seleccion");
+    }
+    hoverVolver = currentHover;
+}
+
+void Juego::renderizarEstadisticas() {
+    ventana.setView(ventana.getDefaultView());
+    if (tieneFondoMenu) {
+        ventana.draw(spriteFondoMenu);
+    }
+    
+    std::string statsStr = "ESTADISTICAS HISTORICAS\n\n"
+                           "Partidas jugadas: " + std::to_string(statsHistoricas.getPartidasJugadas()) + "\n"
+                           "Oleada maxima alcanzada: " + std::to_string(statsHistoricas.getOleadaMaxima()) + "\n"
+                           "Zombies eliminados: " + std::to_string(statsHistoricas.getZombiesEliminados());
+    
+    textoStats.setString(statsStr);
+    sf::FloatRect bounds = textoStats.getLocalBounds();
+    textoStats.setOrigin({bounds.position.x + bounds.size.x/2.f, bounds.position.y + bounds.size.y/2.f});
+    textoStats.setPosition({640.f, 300.f});
+    
+    ventana.draw(textoStats);
+    btnVolverStats->dibujar(ventana);
+    mira.dibujar(ventana);
+}
+
+void Juego::actualizarSeleccionPersonaje(sf::Vector2f posMouse) {
+    static int hoverIndex = -1;
+    int currentHover = -1;
+
+    for (int i = 0; i < (int)botonesPersonajes.size(); i++) {
+        botonesPersonajes[i].boton.actualizar(posMouse);
+        if (botonesPersonajes[i].boton.getGlobalBounds().contains(posMouse)) {
+            currentHover = i;
+        }
+    }
+    btnVolverSeleccion->actualizar(posMouse);
+    if (btnVolverSeleccion->getGlobalBounds().contains(posMouse)) {
+        currentHover = (int)botonesPersonajes.size();
     }
 
-    zombieManager.dibujarZombies(ventana);
-    mira.dibujar(ventana);
+    if (currentHover != hoverIndex && currentHover != -1) {
+        SoundManager::play("seleccion");
+    }
+    hoverIndex = currentHover;
+}
 
+void Juego::renderizarSeleccionPersonaje() {
     ventana.setView(ventana.getDefaultView());
-    hud.dibujar(ventana);
+    if (tieneFondoMenu) {
+        ventana.draw(spriteFondoMenu);
+    }
 
-    ventana.display();
+    sf::Text txtSelect(fuenteMenu);
+    txtSelect.setString("SELECCIONA TU PERSONAJE:");
+    txtSelect.setCharacterSize(35);
+    txtSelect.setFillColor(sf::Color::White);
+    sf::FloatRect bounds = txtSelect.getLocalBounds();
+    txtSelect.setOrigin({bounds.position.x + bounds.size.x/2.f, bounds.position.y + bounds.size.y/2.f});
+    txtSelect.setPosition({640.f, 150.f});
+    
+    ventana.draw(txtSelect);
+    for (auto& bp : botonesPersonajes) {
+        bp.boton.dibujar(ventana);
+        ventana.draw(bp.sprite);
+    }
+    btnVolverSeleccion->dibujar(ventana);
+    
+    // Dibujar mira sobre la selección
+    mira.dibujar(ventana);
+}
+
+void Juego::iniciarPartidaDirecta() {
+    RegistroPersonaje reg;
+    bool cargado = false;
+    FILE* pFile = fopen("personajes.dat", "rb");
+    if (pFile) {
+        if (fread(&reg, sizeof(reg), 1, pFile) == 1) {
+            cargado = true;
+        }
+        fclose(pFile);
+    }
+    
+    if (cargado) {
+        float velocidad = reg.velocidad;
+        float cooldown = reg.cooldownHabilidad;
+        jugador = Personaje(reg.id, reg.idArmaEspecial, 
+                            reg.nombre, reg.vida, reg.armadura, 
+                            velocidad, cooldown);
+    } else {
+        // Fallback default
+        jugador = Personaje(0, 4, "Jugador", 100.f, 50.f, 250.f, 15.f);
+    }
+    zombieManager.cargarOleada(1);
+    zombieManager.resetZombiesEliminados();
+    estadoActual = EstadoJuego::Jugando;
+    ventana.setMouseCursorVisible(false);
 }
 
 void Juego::procesarRayCast(){
@@ -289,4 +401,24 @@ void Juego::procesarRayCast(){
       }
     }
   }
+}
+
+void Juego::guardarStats() {
+    std::ofstream archivo("stats.dat", std::ios::binary | std::ios::trunc);
+    if (archivo) {
+        archivo.write(reinterpret_cast<char*>(&statsHistoricas), sizeof(Estadistica));
+        archivo.close();
+    }
+}
+
+void Juego::cargarStats() {
+    std::ifstream archivo("stats.dat", std::ios::binary);
+    if (archivo) {
+        archivo.read(reinterpret_cast<char*>(&statsHistoricas), sizeof(Estadistica));
+        archivo.close();
+    } else {
+        statsHistoricas.setPartidasJugadas(0);
+        statsHistoricas.setOleadaMaxima(0);
+        statsHistoricas.setZombiesEliminados(0);
+    }
 }
