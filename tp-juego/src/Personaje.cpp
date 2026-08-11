@@ -48,13 +48,13 @@ Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida,
     this->armaEquipada = 0;
 }
 
-void Personaje::actualizar(float deltaTime, sf::Vector2f posMouse, const std::vector<sf::FloatRect>& vectorObjetosMapaHitbox) {
+void Personaje::actualizar(float deltaTime, sf::Vector2f posMouse, const std::vector<sf::FloatRect>& vectorObjetosMapaHitbox, ProyectilPool& proyectiles) {
     this->deltaTime = deltaTime;
     movimiento(vectorObjetosMapaHitbox);
     elegirArma();
 
 
-    inventarioArmas[armaEquipada].actualizar(deltaTime, posMouse, getPosicion());
+    inventarioArmas[armaEquipada].actualizar(deltaTime, posMouse, getPosicion(), proyectiles);
 
 }
 

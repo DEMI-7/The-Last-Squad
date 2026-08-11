@@ -26,6 +26,8 @@ ObjetoGrafico::ObjetoGrafico() : sprite(textura) {
     hitboxDebug.setOutlineColor(sf::Color::Red);
     hitboxDebug.setOutlineThickness(2.f);
     angulo = 0.f;
+
+    ajustarHitboxAlSprite();
 }
 
 ObjetoGrafico::ObjetoGrafico(const sf::Texture& texturaPrecargada) : sprite(texturaPrecargada){

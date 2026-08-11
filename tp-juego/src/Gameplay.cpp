@@ -16,7 +16,9 @@ void Gameplay::actualizar(float deltaTime) {
 
     sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(sf::Mouse::getPosition(juego->getVentana()), juego->getVista());
     
-    jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox);
+    jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox, proyectiles);
+
+    proyectiles.actualizar(deltaTime);
 }
 
 void Gameplay::dibujar(sf::RenderWindow& ventana) {
@@ -25,6 +27,8 @@ void Gameplay::dibujar(sf::RenderWindow& ventana) {
     for (auto &obstaculo : vectorObjetosMapa) {
         obstaculo.dibujar(ventana);
     }
+
+    proyectiles.dibujar(ventana);
 }
 
 

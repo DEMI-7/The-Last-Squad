@@ -1,5 +1,6 @@
 #pragma once
 #include "ObjetoGrafico.h"
+#include "ProyectilPool.h"
 
 
 class Arma : public ObjetoGrafico {
@@ -26,13 +27,13 @@ class Arma : public ObjetoGrafico {
         int municionEnCargador;
 
 
-        void disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador);
+        void disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& proyectiles);
         void recargar();
 
     public:
         Arma(int id, std::string nombre, float cadencia, float danio, float alcance, float costo, int municionMaxima, int tamanioCargador);
 
-        void actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador);
+        void actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& proyectiles);
 
         // Un id de -1 indica un arma no disponible
         bool estaDisponible() const { return desbloqueada;}

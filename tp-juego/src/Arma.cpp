@@ -1,5 +1,6 @@
 #include "../include/Arma.h"
 #include <cmath>
+#include <iostream>
 
 Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcance, float costo, int municionMaxima, int tamanioCargador){
 
@@ -25,7 +26,7 @@ Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcanc
 
 }
 
-void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador){
+void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& proyectiles){
     
     this->deltaTime = deltaTime;
 
@@ -44,17 +45,17 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
     setAngulo(std::atan2(deltaY, deltaX) * -180.f / 3.14159f);
 
 
-    disparar(posicionMouse, posicionJugador);
+    disparar(posicionMouse, posicionJugador, proyectiles);
     recargar();
 }
 
-void Arma::disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador) {
+void Arma::disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& proyectiles) {
     tiempoDesdeUltimoDisparo += deltaTime;
     tiempoRecarga += deltaTime;
 
     if(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && tiempoDesdeUltimoDisparo >= cadencia && municionEnCargador > 0 && !enRecarga) {
-        
-        
+        proyectiles.disparar(posicionJugador, posicionMouse, alcance, 200, danio, idArma);
+        std::cout << "disparo" << std::endl;
         municionEnCargador--;
         tiempoDesdeUltimoDisparo = 0.f;
     }

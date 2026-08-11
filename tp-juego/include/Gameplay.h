@@ -2,6 +2,7 @@
 #include "Pantalla.h"
 #include "Personaje.h"
 #include "ObjetoMapa.h"
+#include "ProyectilPool.h"
 
 class Gameplay : public Pantalla {
     public:
@@ -23,5 +24,7 @@ class Gameplay : public Pantalla {
     std::vector<ObjetoMapa> vectorObjetosMapa;
     std::vector<sf::FloatRect> vectorObjetosMapaHitbox;
     std::vector<sf::FloatRect> hitboxZombies;
+
+    ProyectilPool proyectiles;
 
 };

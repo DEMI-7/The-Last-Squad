@@ -9,4 +9,10 @@ class ProyectilPool {
 
     public:
         ProyectilPool();
+
+        void disparar(sf::Vector2f posInicial, sf::Vector2f direccion, float alcance, float velocidad, float danio, int tipo);
+        
+        void actualizar(float deltaTime);
+
+        void dibujar(sf::RenderWindow& ventana);
 };

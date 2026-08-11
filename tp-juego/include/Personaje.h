@@ -4,7 +4,7 @@
 #include "Entidad.h"
 #include "Arma.h"
 #include "archivoArma.h"
-
+#include "ProyectilPool.h"
 
 class Personaje : public Entidad {
 private:
@@ -35,7 +35,7 @@ public:
     
     Personaje(int id, int idArmaEspecial, std::string nombre, float vida, float armadura, float velocidad, float cooldownHabilidad);
     
-    virtual void actualizar(float deltaTime, sf::Vector2f posMouse, const std::vector<sf::FloatRect>& vectorObjetosMapaHitbox);
+    virtual void actualizar(float deltaTime, sf::Vector2f posMouse, const std::vector<sf::FloatRect>& vectorObjetosMapaHitbox, ProyectilPool& proyectiles);
 
     void dibujar(sf::RenderWindow& ventana) override;
 
