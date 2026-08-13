@@ -8,26 +8,38 @@ Proyectil::Proyectil(const sf::Texture& textura) : ObjetoGrafico(textura){
     idArma = -1.f;
     direccion.x = 0;
     direccion.y = 0;
+    distanciaRecorrida = 0;
 
     this->disponible = true;
 }
 
-void Proyectil::usarProyectil(sf::Vector2f posInicial, sf::Vector2f direccion, float alcanceMax, float velocidad, float danio, int idArma) {
+void Proyectil::usarProyectil(sf::Vector2f posInicial, sf::Vector2f posicionObjetivo , float alcanceMax, float velocidad, float danio, int idArma) {
     this->velocidad = velocidad;
     this->alcanceMax = alcanceMax;
     this->danio = danio;
     this->idArma = idArma;
     this->distanciaRecorrida = 0;
-    this->direccion.x = direccion.x - posInicial.x;
-    this->direccion.y = direccion.y - posInicial.y;
+    this->direccion = posicionObjetivo - posInicial;
 
-    float longitud = std::sqrt(direccion.x * direccion.x + direccion.y * direccion.y);
+    float longitud = std::sqrt(this->direccion.x * this->direccion.x + this->direccion.y * this->direccion.y);
     this->direccion.x /= longitud;
     this->direccion.y /= longitud;
 
     this->disponible = false;
 
-    setPosicion(posInicial.x, posInicial.y);
+    float anguloRadianes = std::atan2(direccion.y, direccion.x);
+    // Convertimos a grados
+    float anguloGrados = anguloRadianes * 180.f / std::acos(-1.f);
+    // +90.f compensa que el sprite original apunta hacia arriba
+    setAngulo(anguloGrados + 90.f);
+
+    
+    setHitbox(5,5);
+    centrarOrigen();
+    setHitboxVisible();
+    escalarSprite(0.3f,0.3f);
+    
+    setPosicionCentrado(posInicial.x, posInicial.y);
 }
 
 void Proyectil::actualizar(float deltaTime) {

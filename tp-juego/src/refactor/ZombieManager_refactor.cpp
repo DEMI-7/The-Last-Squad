@@ -276,4 +276,3 @@ void ZombieManager::cargarOleada(int oleada) {
     zombies.clear();
     indicesZonasActivas.clear();
 }
-

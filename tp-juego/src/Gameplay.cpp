@@ -2,8 +2,9 @@
 #include "../include/Juego.h"
 #include <iostream>
 
-Gameplay::Gameplay(Juego* juego) : Pantalla(juego), jugador(0,0, "recon", 100,100,200,10) {
+Gameplay::Gameplay(Juego* juego) : Pantalla(juego), jugador(0,4, "recon", 100,100,200,10) {
     inicializarObstaculos(vectorObjetosMapa);
+    elMapa.cargarTextura("assets/varios/mapa.png");
 }
 
 void Gameplay::manejarEventos(const sf::Event&) {
@@ -19,9 +20,13 @@ void Gameplay::actualizar(float deltaTime) {
     jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox, proyectiles);
 
     proyectiles.actualizar(deltaTime);
+
+    pruebaEnemigo.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox);
 }
 
 void Gameplay::dibujar(sf::RenderWindow& ventana) {
+    elMapa.dibujar(ventana);
+
     jugador.dibujar(ventana);
 
     for (auto &obstaculo : vectorObjetosMapa) {
@@ -29,7 +34,12 @@ void Gameplay::dibujar(sf::RenderWindow& ventana) {
     }
 
     proyectiles.dibujar(ventana);
+
+    pruebaEnemigo.dibujar(ventana);
 }
+
+
+//void Gameplay::
 
 
 void Gameplay::inicializarObstaculos(std::vector<ObjetoMapa> &vectorObjetosMapa) {

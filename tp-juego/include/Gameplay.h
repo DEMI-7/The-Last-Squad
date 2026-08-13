@@ -3,6 +3,7 @@
 #include "Personaje.h"
 #include "ObjetoMapa.h"
 #include "ProyectilPool.h"
+#include "Zombie.h"
 
 class Gameplay : public Pantalla {
     public:
@@ -20,11 +21,16 @@ class Gameplay : public Pantalla {
 
     Personaje jugador;
 
+    Zombie pruebaEnemigo;
+
     //---- Vectores de elementos del juego ----
     std::vector<ObjetoMapa> vectorObjetosMapa;
     std::vector<sf::FloatRect> vectorObjetosMapaHitbox;
     std::vector<sf::FloatRect> hitboxZombies;
 
     ProyectilPool proyectiles;
+
+    // ------ MAPA
+    ObjetoMapa elMapa;
 
 };

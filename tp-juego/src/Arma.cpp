@@ -1,4 +1,5 @@
 #include "../include/Arma.h"
+#include <numbers>
 #include <cmath>
 #include <iostream>
 
@@ -16,8 +17,11 @@ Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcanc
 
     this->enRecarga = false;
 
-    this->municionActual = municionMaxima; // Empieza con la mitad de la munición total
+    this->municionActual = municionMaxima;
     this->municionEnCargador = tamanioCargador;
+
+    this->tiempoRecarga = 0;
+    this->tiempoDesdeUltimoDisparo = 0;
 
     std::string rutaTextura = "assets/armas/" + nombre + ".png";
     cargarTextura(rutaTextura);
@@ -42,7 +46,7 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
         setPosicionCentrado(posicionJugador.x + 13, posicionJugador.y + 12.f);
     }
         
-    setAngulo(std::atan2(deltaY, deltaX) * -180.f / 3.14159f);
+    setAngulo(std::atan2(deltaY, deltaX) * -180.f / std::acos(-1.f));
 
 
     disparar(posicionMouse, posicionJugador, proyectiles);
@@ -54,7 +58,7 @@ void Arma::disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posic
     tiempoRecarga += deltaTime;
 
     if(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && tiempoDesdeUltimoDisparo >= cadencia && municionEnCargador > 0 && !enRecarga) {
-        proyectiles.disparar(posicionJugador, posicionMouse, alcance, 200, danio, idArma);
+        proyectiles.disparar(posicionJugador, posicionMouse, alcance, 1500, danio, idArma);
         std::cout << "disparo" << std::endl;
         municionEnCargador--;
         tiempoDesdeUltimoDisparo = 0.f;

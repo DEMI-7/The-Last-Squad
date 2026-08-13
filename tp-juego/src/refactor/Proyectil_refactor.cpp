@@ -29,7 +29,7 @@ Proyectil::Proyectil(sf::Texture& texturaProyectil,sf::Vector2f posInicial, sf::
 
     } else {
 
-        sprite.setTexture(texturaProyectil);
+        sprite.setTexture(texturaProyectil); 
         escalarSprite(1.5f, 1.5f);
 
     }

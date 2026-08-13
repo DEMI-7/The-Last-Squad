@@ -43,6 +43,7 @@ void ObjetoGrafico::cargarTextura(const std::string& rutaTextura)
 {
     if (!textura.loadFromFile(rutaTextura)) {
         std::cout << "Error al cargar la textura desde: " << rutaTextura << std::endl;
+        return;
     }
 
     std::cout << "Textura cargada correctamente desde: " << rutaTextura << std::endl;
