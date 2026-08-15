@@ -15,22 +15,24 @@ class Gameplay : public Pantalla {
 
         void dibujar(sf::RenderWindow&) override;
 
+        
+        private:
+        
+        Personaje jugador;
+        
+        Zombie pruebaEnemigo;
+        
+        //---- Vectores de elementos del juego ----
+        std::vector<ObjetoMapa> vectorObjetosMapa;
+        std::vector<sf::FloatRect> vectorObjetosMapaHitbox;
+        std::vector<sf::FloatRect> vectorhitboxZombies;
+        
+        ProyectilPool proyectiles;
+        
+        // ------ MAPA
+        ObjetoMapa elMapa;
+        
+        
         void inicializarObstaculos(std::vector<ObjetoMapa> &vectorObjetosMapa);
-
-    private:
-
-    Personaje jugador;
-
-    Zombie pruebaEnemigo;
-
-    //---- Vectores de elementos del juego ----
-    std::vector<ObjetoMapa> vectorObjetosMapa;
-    std::vector<sf::FloatRect> vectorObjetosMapaHitbox;
-    std::vector<sf::FloatRect> hitboxZombies;
-
-    ProyectilPool proyectiles;
-
-    // ------ MAPA
-    ObjetoMapa elMapa;
-
+        void resolverColisionesJugadorZombies();
 };

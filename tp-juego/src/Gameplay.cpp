@@ -5,6 +5,8 @@
 Gameplay::Gameplay(Juego* juego) : Pantalla(juego), jugador(0,4, "recon", 100,100,200,10) {
     inicializarObstaculos(vectorObjetosMapa);
     elMapa.cargarTextura("assets/varios/mapa.png");
+
+    vectorhitboxZombies.push_back(pruebaEnemigo.getHitbox());
 }
 
 void Gameplay::manejarEventos(const sf::Event&) {
@@ -15,13 +17,18 @@ void Gameplay::manejarEventos(const sf::Event&) {
 
 void Gameplay::actualizar(float deltaTime) {
 
+    resolverColisionesJugadorZombies();
+
+    vectorhitboxZombies.clear();
+    vectorhitboxZombies.push_back(pruebaEnemigo.getHitbox());
+
     sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(sf::Mouse::getPosition(juego->getVentana()), juego->getVista());
     
     jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox, proyectiles);
 
     proyectiles.actualizar(deltaTime);
 
-    pruebaEnemigo.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox);
+    pruebaEnemigo.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox, vectorhitboxZombies);
 }
 
 void Gameplay::dibujar(sf::RenderWindow& ventana) {
@@ -39,7 +46,36 @@ void Gameplay::dibujar(sf::RenderWindow& ventana) {
 }
 
 
-//void Gameplay::
+void Gameplay::resolverColisionesJugadorZombies() {
+    if(pruebaEnemigo.getHitbox().findIntersection(jugador.getHitbox())) {
+
+        // Resolver la penetración entre ambos
+        sf::FloatRect hitboxZombie = pruebaEnemigo.getHitbox();
+        sf::FloatRect hitboxJugador = jugador.getHitbox();
+
+        float overlapLeft = (hitboxZombie.position.x + hitboxZombie.size.x) - hitboxJugador.position.x;
+
+        float overlapRight = (hitboxJugador.position.x + hitboxJugador.size.x) - hitboxZombie.position.x;
+
+        float overlapTop = (hitboxZombie.position.y + hitboxZombie.size.y) - hitboxJugador.position.y;
+
+        float overlapBottom = (hitboxJugador.position.y + hitboxJugador.size.y) - hitboxZombie.position.y;
+
+        float minOverlapX = (overlapLeft < overlapRight) ? overlapLeft : -overlapRight;
+
+        float minOverlapY = (overlapTop < overlapBottom) ? overlapTop : -overlapBottom;
+
+        if (std::abs(minOverlapX) < std::abs(minOverlapY)) {
+            // Separar horizontalmente
+            jugador.mover(minOverlapX / 0.6f, 0.f);
+            //pruebaEnemigo.mover(-minOverlapX / 0.4f, 0.f);
+        } else {
+            // Separar verticalmente
+            jugador.mover(0.f, minOverlapY / 0.6f);
+            //pruebaEnemigo.mover(0.f, -minOverlapY / 0.4f);
+        }
+    }
+}
 
 
 void Gameplay::inicializarObstaculos(std::vector<ObjetoMapa> &vectorObjetosMapa) {

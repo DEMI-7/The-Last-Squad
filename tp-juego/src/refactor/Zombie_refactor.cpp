@@ -150,7 +150,7 @@ void Zombie::actualizar(float deltaTime, const Personaje &jugador,
   }
   int zombiesCercanos = 0;
 
-  for (const auto &otroZombie : todosLosZombies) {
+  for (const auto& otroZombie : todosLosZombies) {
     if (&otroZombie == this || otroZombie.muerto()) {
       continue;
     }
