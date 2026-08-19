@@ -8,6 +8,7 @@ Zombie::Zombie() {
     this->vidaMax = 100;
     this->vidaActual = 100;
     this->velocidad = 80;
+    setHitboxVisible();
 
     ajustarHitboxAlSprite();
 
@@ -35,7 +36,7 @@ void Zombie::actualizar(float deltaTime,const sf::FloatRect& personajeHitbox, co
 
     for (const auto& obstaculo : vectorObjetosMapaHitbox) {
         if(obstaculo.contains(posicionAntena)) {
-            sf::Vector2f centroObstaculo({obstaculo.position.x * obstaculo.size.x /2.f, obstaculo.position.y * obstaculo.size.y /2.f});
+            sf::Vector2f centroObstaculo({obstaculo.position.x + obstaculo.size.x /2.f, obstaculo.position.y + obstaculo.size.y /2.f});
 
             sf::Vector2f vectorEvasion = getPosicion() - centroObstaculo;
 
@@ -61,12 +62,16 @@ void Zombie::actualizar(float deltaTime,const sf::FloatRect& personajeHitbox, co
     }
     int zombiesCercanos = 0;
 
-    for (const auto& hitboxZombie : vectorHitboxZombies) {
-        if(hitboxZombie == getHitbox()) {
-            continue;
-        }
+    sf::FloatRect miHitbox = getHitbox();
 
-        sf::Vector2f diferenciaPosicion = getPosicion() - hitboxZombie.position; // DIFERENCIA POSITION DE SPRITE Y DE FLOAT RECT INVESTIGAR
+    sf::Vector2f miCentro({miHitbox.position.x + miHitbox.size.x /2.f, miHitbox.position.y + miHitbox.size.y /2.f});
+
+    for (const auto& hitboxZombie : vectorHitboxZombies) {
+        
+        sf::Vector2f centroOtro({hitboxZombie.position.x + hitboxZombie.size.x / 2.f, hitboxZombie.position.y + hitboxZombie.size.y / 2.f});
+
+        sf::Vector2f diferenciaPosicion = miCentro - centroOtro;
+
         float distZ = std::sqrt(diferenciaPosicion.x * diferenciaPosicion.x + diferenciaPosicion.y * diferenciaPosicion.y);
 
         if (distZ > 0.f && distZ < radioSeparacion) {
@@ -131,7 +136,7 @@ void Zombie::actualizar(float deltaTime,const sf::FloatRect& personajeHitbox, co
     mover(movimiento.x, 0.f);
     for (const auto &obstaculo : vectorObjetosMapaHitbox) {
       if (getHitbox().findIntersection(obstaculo)) {
-        setPosicionCentrado(posPrevia.x, getPosicion().y);
+        mover(posPrevia.x - getPosicion().x, 0.f);
         break;
       }
     }
@@ -141,7 +146,7 @@ void Zombie::actualizar(float deltaTime,const sf::FloatRect& personajeHitbox, co
     mover(0.f, movimiento.y);
     for (const auto &obstaculo : vectorObjetosMapaHitbox) {
       if (getHitbox().findIntersection(obstaculo)) {
-        setPosicionCentrado(getPosicion().x, posPrevia.y);
+        mover(0.f, posPrevia.y - getPosicion().y);
         break;
       }
     }

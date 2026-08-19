@@ -6,6 +6,8 @@ Gameplay::Gameplay(Juego* juego) : Pantalla(juego), jugador(0,4, "recon", 100,10
     inicializarObstaculos(vectorObjetosMapa);
     elMapa.cargarTextura("assets/varios/mapa.png");
 
+    juego->getVista().setSize({1920,1080});
+
     vectorhitboxZombies.push_back(pruebaEnemigo.getHitbox());
 }
 
@@ -17,32 +19,57 @@ void Gameplay::manejarEventos(const sf::Event&) {
 
 void Gameplay::actualizar(float deltaTime) {
 
+    
     resolverColisionesJugadorZombies();
-
+    
     vectorhitboxZombies.clear();
     vectorhitboxZombies.push_back(pruebaEnemigo.getHitbox());
-
-    sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(sf::Mouse::getPosition(juego->getVentana()), juego->getVista());
+    
+    //sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(sf::Mouse::getPosition(juego->getVentana()), juego->getVista());
+    
+    
+    proyectiles.actualizar(deltaTime);
+    
+    pruebaEnemigo.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox, vectorhitboxZombies);
+    
+    // ----- vista -----
+    float auxVistaX = jugador.getPosicion().x;
+    float auxVistaY = jugador.getPosicion().y;
+    
+    if (auxVistaX < juego->getVista().getSize().x / 2.f)
+    auxVistaX = juego->getVista().getSize().x / 2.f;
+    
+    if (auxVistaX > elMapa.getSprite().getGlobalBounds().size.x - juego->getVista().getSize().x / 2.f)
+    auxVistaX = elMapa.getSprite().getGlobalBounds().size.x - juego->getVista().getSize().x / 2.f;
+    
+    if (auxVistaY < juego->getVista().getSize().y / 2.f)
+    auxVistaY = juego->getVista().getSize().y / 2.f;
+    if (auxVistaY > elMapa.getSprite().getGlobalBounds().size.y - juego->getVista().getSize().y / 2.f)
+    auxVistaY = elMapa.getSprite().getGlobalBounds().size.y - juego->getVista().getSize().y / 2.f;
+    
+    juego->getVista().setCenter({auxVistaX, auxVistaY});
+    juego->getVentana().setView(juego->getVista());
+    sf::Vector2i mousePixel = sf::Mouse::getPosition(juego->getVentana());
+    sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(mousePixel, juego->getVista());
     
     jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox, proyectiles);
-
-    proyectiles.actualizar(deltaTime);
-
-    pruebaEnemigo.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox, vectorhitboxZombies);
+    
 }
 
 void Gameplay::dibujar(sf::RenderWindow& ventana) {
+
     elMapa.dibujar(ventana);
-
+    
     jugador.dibujar(ventana);
-
+    
     for (auto &obstaculo : vectorObjetosMapa) {
         obstaculo.dibujar(ventana);
     }
-
+    
     proyectiles.dibujar(ventana);
-
+    
     pruebaEnemigo.dibujar(ventana);
+
 }
 
 
@@ -67,12 +94,12 @@ void Gameplay::resolverColisionesJugadorZombies() {
 
         if (std::abs(minOverlapX) < std::abs(minOverlapY)) {
             // Separar horizontalmente
-            jugador.mover(minOverlapX / 0.6f, 0.f);
-            //pruebaEnemigo.mover(-minOverlapX / 0.4f, 0.f);
+            jugador.mover(minOverlapX / 1.f, 0.f);
+            pruebaEnemigo.mover(-minOverlapX / 1.f, 0.f);
         } else {
             // Separar verticalmente
-            jugador.mover(0.f, minOverlapY / 0.6f);
-            //pruebaEnemigo.mover(0.f, -minOverlapY / 0.4f);
+            jugador.mover(0.f, minOverlapY / 1.f);
+            pruebaEnemigo.mover(0.f, -minOverlapY / 1.f);
         }
     }
 }

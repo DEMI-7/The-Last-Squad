@@ -16,11 +16,11 @@ Personaje::Personaje(int id, int idArmaEspecial, std::string nombre, float vida,
     habilidad = "-";
 
     // ---------- Confiuracion de sprite y hitbox
-    mostrarHitbox = false;
+    mostrarHitbox = true;
     cargarTextura("assets/personajes/" + nombre + ".png");
     escalarSprite(0.8f,0.8f);
-    centrarOrigen();
     setHitbox(13.f * 2.f, 16.f * 2.1f);
+    centrarOrigen();
 
     // ---------- Posicion
     setPosicionCentrado(900.f, 400.f);

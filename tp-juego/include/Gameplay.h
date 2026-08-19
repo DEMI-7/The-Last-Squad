@@ -32,7 +32,6 @@ class Gameplay : public Pantalla {
         // ------ MAPA
         ObjetoMapa elMapa;
         
-        
         void inicializarObstaculos(std::vector<ObjetoMapa> &vectorObjetosMapa);
         void resolverColisionesJugadorZombies();
 };
