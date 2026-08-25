@@ -14,12 +14,8 @@ ProyectilPool::ProyectilPool(){
 }
 
 void ProyectilPool::disparar(sf::Vector2f posInicial, sf::Vector2f direccion, float alcance, float velocidad, float danio, int idArma) {
-    //int posProyectil = buscarProyectilDisponible();
-    //proyectilesVector[posProyectil].usarProyectil(posInicial, direccion, alcance, velocidad, danio, idArma);
-
-
     for (auto &proy : proyectilesVector) {
-        if (proy.estaDisponible()) {
+        if (!proy.estaActivo()) {
             proy.usarProyectil(posInicial, direccion, alcance, velocidad, danio, idArma);
             std::cout << "Proyectil usado" << std::endl;
             return;
@@ -28,13 +24,18 @@ void ProyectilPool::disparar(sf::Vector2f posInicial, sf::Vector2f direccion, fl
 }
 
 void ProyectilPool::actualizar(float deltaTime) {
-    for (int i = 0; i <= 100; i++) {
-        proyectilesVector[i].actualizar(deltaTime);
+    for(auto& proyectil : proyectilesVector) {
+        proyectil.actualizar(deltaTime);
     }
 }
 
 void ProyectilPool::dibujar(sf::RenderWindow& ventana) {
-    for (int i = 0; i <= 100; i++) {
-        proyectilesVector[i].dibujar(ventana);
+    for(auto& proyectil : proyectilesVector) {
+        proyectil.dibujar(ventana);
     }
+}
+
+std::vector<Proyectil>& ProyectilPool::getVectorProyectiles() {
+    
+    return proyectilesVector;
 }

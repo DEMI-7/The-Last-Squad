@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ObjetoGrafico.h"
 
 class Entidad : public ObjetoGrafico {
@@ -14,6 +13,7 @@ protected:
 public:
 
     Entidad();
+    Entidad(const sf::Texture& texturaPrecargada);
 
     virtual void recibirDanio(float cantidad);
     bool estaVivo() const;

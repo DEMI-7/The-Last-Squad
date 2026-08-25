@@ -4,6 +4,7 @@
 #include "ObjetoMapa.h"
 #include "ProyectilPool.h"
 #include "Zombie.h"
+#include "GestorOleada.h"
 
 class Gameplay : public Pantalla {
     public:
@@ -16,22 +17,30 @@ class Gameplay : public Pantalla {
         void dibujar(sf::RenderWindow&) override;
 
         
-        private:
+    private:
         
         Personaje jugador;
-        
-        Zombie pruebaEnemigo;
         
         //---- Vectores de elementos del juego ----
         std::vector<ObjetoMapa> vectorObjetosMapa;
         std::vector<sf::FloatRect> vectorObjetosMapaHitbox;
         std::vector<sf::FloatRect> vectorhitboxZombies;
+
+        //sf::Texture texturaZombie;
+        std::vector<Zombie> vectorZombies;
+        GestorOleada oleada;
         
         ProyectilPool proyectiles;
         
         // ------ MAPA
         ObjetoMapa elMapa;
+
         
         void inicializarObstaculos(std::vector<ObjetoMapa> &vectorObjetosMapa);
+
         void resolverColisionesJugadorZombies();
+
+        void resolverColisionesProyectilZombies();
+
+        void actualizarVista();
 };

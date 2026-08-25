@@ -15,4 +15,6 @@ class ProyectilPool {
         void actualizar(float deltaTime);
 
         void dibujar(sf::RenderWindow& ventana);
+
+        std::vector<Proyectil>& getVectorProyectiles();
 };

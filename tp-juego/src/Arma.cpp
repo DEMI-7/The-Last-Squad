@@ -30,7 +30,7 @@ Arma::Arma(int id, std::string nombre, float cadencia, float danio, float alcanc
 
 }
 
-void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& proyectiles){
+void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& poolProyectiles){
     
     this->deltaTime = deltaTime;
 
@@ -49,16 +49,16 @@ void Arma::actualizar(float deltaTime,const sf::Vector2f &posicionMouse, const s
     setAngulo(std::atan2(deltaY, deltaX) * -180.f / std::acos(-1.f));
 
 
-    disparar(posicionMouse, posicionJugador, proyectiles);
+    disparar(posicionMouse, posicionJugador, poolProyectiles);
     recargar();
 }
 
-void Arma::disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& proyectiles) {
+void Arma::disparar(const sf::Vector2f &posicionMouse, const sf::Vector2f &posicionJugador, ProyectilPool& poolProyectiles) {
     tiempoDesdeUltimoDisparo += deltaTime;
     tiempoRecarga += deltaTime;
 
     if(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && tiempoDesdeUltimoDisparo >= cadencia && municionEnCargador > 0 && !enRecarga) {
-        proyectiles.disparar(posicionJugador, posicionMouse, alcance, 1500, danio, idArma);
+        poolProyectiles.disparar(posicionJugador, posicionMouse, alcance, 1500, danio, idArma);
         std::cout << "disparo" << std::endl;
         municionEnCargador--;
         tiempoDesdeUltimoDisparo = 0.f;

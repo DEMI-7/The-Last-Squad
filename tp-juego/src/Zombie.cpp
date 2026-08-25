@@ -1,16 +1,30 @@
 #include "../include/Zombie.h"
 #include <cmath>
 
+/*
 Zombie::Zombie() {
     cargarTextura("assets/zombie.png");
     setPosicion(500,500);
-
+    
     this->vidaMax = 100;
     this->vidaActual = 100;
     this->velocidad = 80;
     setHitboxVisible();
+    
+    ajustarHitboxAlSprite();
+}
+*/
+
+Zombie::Zombie(const sf::Texture& texturaPrecargada, sf::Vector2f posInicial) : Entidad(texturaPrecargada) {
+
+    setPosicion(posInicial.x,posInicial.y);
+
+    this->vidaMax = 100;
+    this->vidaActual = 100;
+    this->velocidad = 80;
 
     ajustarHitboxAlSprite();
+    setHitboxVisible();
 
 }
 

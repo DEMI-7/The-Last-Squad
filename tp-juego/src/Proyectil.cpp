@@ -10,7 +10,7 @@ Proyectil::Proyectil(const sf::Texture& textura) : ObjetoGrafico(textura){
     direccion.y = 0;
     distanciaRecorrida = 0;
 
-    this->disponible = true;
+    this->activo = false;
 }
 
 void Proyectil::usarProyectil(sf::Vector2f posInicial, sf::Vector2f posicionObjetivo , float alcanceMax, float velocidad, float danio, int idArma) {
@@ -25,7 +25,7 @@ void Proyectil::usarProyectil(sf::Vector2f posInicial, sf::Vector2f posicionObje
     this->direccion.x /= longitud;
     this->direccion.y /= longitud;
 
-    this->disponible = false;
+    activar();
 
     float anguloRadianes = std::atan2(direccion.y, direccion.x);
     // Convertimos a grados
@@ -43,13 +43,19 @@ void Proyectil::usarProyectil(sf::Vector2f posInicial, sf::Vector2f posicionObje
 }
 
 void Proyectil::actualizar(float deltaTime) {
-    if(disponible == false) {
+    if(estaActivo()) {
         float desplazamiento = velocidad * deltaTime;
         mover(direccion.x * desplazamiento, direccion.y * desplazamiento);
         distanciaRecorrida += desplazamiento;
     }
 
     if (distanciaRecorrida >= alcanceMax) {
-        disponible = true;
+        desactivar();
+    }
+}
+
+void Proyectil::dibujar(sf::RenderWindow& ventana) {
+    if (estaActivo()){
+        ObjetoGrafico::dibujar(ventana);
     }
 }

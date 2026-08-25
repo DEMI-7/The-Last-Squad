@@ -1,38 +1,122 @@
 #include "../include/Gameplay.h"
 #include "../include/Juego.h"
 #include <iostream>
+#include <algorithm>
 
-Gameplay::Gameplay(Juego* juego) : Pantalla(juego), jugador(0,4, "recon", 100,100,200,10) {
+Gameplay::Gameplay(Juego* juego) : Pantalla(juego), jugador(0,4, "recon", 100,100,200,10), oleada(vectorZombies) {
+
     inicializarObstaculos(vectorObjetosMapa);
     elMapa.cargarTextura("assets/varios/mapa.png");
 
     juego->getVista().setSize({1920,1080});
 
-    vectorhitboxZombies.push_back(pruebaEnemigo.getHitbox());
+    vectorZombies.reserve(100);
+
 }
 
 void Gameplay::manejarEventos(const sf::Event&) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+        juego->getVentana().close();
         return;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+
     }
 }
 
 void Gameplay::actualizar(float deltaTime) {
 
+    sf::Vector2i mousePixel = sf::Mouse::getPosition(juego->getVentana());
+    sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(mousePixel, juego->getVista());
     
-    resolverColisionesJugadorZombies();
-    
-    vectorhitboxZombies.clear();
-    vectorhitboxZombies.push_back(pruebaEnemigo.getHitbox());
-    
-    //sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(sf::Mouse::getPosition(juego->getVentana()), juego->getVista());
-    
+    oleada.actualizar(jugador.getPosicion(), deltaTime);
+
+    for(auto& zombie : vectorZombies){
+        vectorhitboxZombies.clear();
+        vectorhitboxZombies.push_back(zombie.getHitbox());    
+    }
+    for(auto& zombie : vectorZombies){
+        zombie.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox, vectorhitboxZombies);
+    }
+
+
     
     proyectiles.actualizar(deltaTime);
+    jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox, proyectiles);
     
-    pruebaEnemigo.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox, vectorhitboxZombies);
+    actualizarVista();
     
-    // ----- vista -----
+    resolverColisionesJugadorZombies();
+    resolverColisionesProyectilZombies();
+    vectorZombies.erase(std::remove_if(vectorZombies.begin(), vectorZombies.end(), [](const Zombie &z) { return !z.estaVivo(); }), vectorZombies.end());
+    
+}
+
+void Gameplay::dibujar(sf::RenderWindow& ventana) {
+
+    elMapa.dibujar(ventana);
+    
+    jugador.dibujar(ventana);
+    
+    for (auto &obstaculo : vectorObjetosMapa) {
+        obstaculo.dibujar(ventana);
+    }
+    
+    proyectiles.dibujar(ventana);
+    
+    for (auto& zombie : vectorZombies) {
+        zombie.dibujar(ventana);
+    }
+
+}
+
+void Gameplay::resolverColisionesProyectilZombies() {
+    for (auto& proyectil : proyectiles.getVectorProyectiles()){
+        for (auto& zombie : vectorZombies) {
+            if (zombie.getHitbox().findIntersection(proyectil.getHitbox()) && proyectil.estaActivo()) {
+                zombie.recibirDanio(proyectil.getDanio());
+                proyectil.desactivar();
+                std::cout << "DISPARO RECIBIDO" << std::endl;
+                break;
+            }
+        }
+    }
+}
+
+void Gameplay::resolverColisionesJugadorZombies() {
+    for (auto& zombie : vectorZombies) {
+        if(zombie.getHitbox().findIntersection(jugador.getHitbox())) {
+            
+            // Resolver la penetración entre ambos
+            sf::FloatRect hitboxZombie = zombie.getHitbox();
+            sf::FloatRect hitboxJugador = jugador.getHitbox();
+
+            float overlapLeft = (hitboxZombie.position.x + hitboxZombie.size.x) - hitboxJugador.position.x;
+            
+            float overlapRight = (hitboxJugador.position.x + hitboxJugador.size.x) - hitboxZombie.position.x;
+            
+            float overlapTop = (hitboxZombie.position.y + hitboxZombie.size.y) - hitboxJugador.position.y;
+            
+            float overlapBottom = (hitboxJugador.position.y + hitboxJugador.size.y) - hitboxZombie.position.y;
+            
+            float minOverlapX = (overlapLeft < overlapRight) ? overlapLeft : -overlapRight;
+            
+            float minOverlapY = (overlapTop < overlapBottom) ? overlapTop : -overlapBottom;
+            
+            if (std::abs(minOverlapX) < std::abs(minOverlapY)) {
+                // Separar horizontalmente
+                jugador.mover(minOverlapX / 1.f, 0.f);
+                zombie.mover(-minOverlapX / 1.f, 0.f);
+            } else {
+                // Separar verticalmente
+                jugador.mover(0.f, minOverlapY / 1.f);
+                zombie.mover(0.f, -minOverlapY / 1.f);
+            }
+        }
+    }
+}
+
+void Gameplay::actualizarVista(){
     float auxVistaX = jugador.getPosicion().x;
     float auxVistaY = jugador.getPosicion().y;
     
@@ -49,61 +133,7 @@ void Gameplay::actualizar(float deltaTime) {
     
     juego->getVista().setCenter({auxVistaX, auxVistaY});
     juego->getVentana().setView(juego->getVista());
-    sf::Vector2i mousePixel = sf::Mouse::getPosition(juego->getVentana());
-    sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(mousePixel, juego->getVista());
-    
-    jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox, proyectiles);
-    
 }
-
-void Gameplay::dibujar(sf::RenderWindow& ventana) {
-
-    elMapa.dibujar(ventana);
-    
-    jugador.dibujar(ventana);
-    
-    for (auto &obstaculo : vectorObjetosMapa) {
-        obstaculo.dibujar(ventana);
-    }
-    
-    proyectiles.dibujar(ventana);
-    
-    pruebaEnemigo.dibujar(ventana);
-
-}
-
-
-void Gameplay::resolverColisionesJugadorZombies() {
-    if(pruebaEnemigo.getHitbox().findIntersection(jugador.getHitbox())) {
-
-        // Resolver la penetración entre ambos
-        sf::FloatRect hitboxZombie = pruebaEnemigo.getHitbox();
-        sf::FloatRect hitboxJugador = jugador.getHitbox();
-
-        float overlapLeft = (hitboxZombie.position.x + hitboxZombie.size.x) - hitboxJugador.position.x;
-
-        float overlapRight = (hitboxJugador.position.x + hitboxJugador.size.x) - hitboxZombie.position.x;
-
-        float overlapTop = (hitboxZombie.position.y + hitboxZombie.size.y) - hitboxJugador.position.y;
-
-        float overlapBottom = (hitboxJugador.position.y + hitboxJugador.size.y) - hitboxZombie.position.y;
-
-        float minOverlapX = (overlapLeft < overlapRight) ? overlapLeft : -overlapRight;
-
-        float minOverlapY = (overlapTop < overlapBottom) ? overlapTop : -overlapBottom;
-
-        if (std::abs(minOverlapX) < std::abs(minOverlapY)) {
-            // Separar horizontalmente
-            jugador.mover(minOverlapX / 1.f, 0.f);
-            pruebaEnemigo.mover(-minOverlapX / 1.f, 0.f);
-        } else {
-            // Separar verticalmente
-            jugador.mover(0.f, minOverlapY / 1.f);
-            pruebaEnemigo.mover(0.f, -minOverlapY / 1.f);
-        }
-    }
-}
-
 
 void Gameplay::inicializarObstaculos(std::vector<ObjetoMapa> &vectorObjetosMapa) {
   vectorObjetosMapa.reserve(40);
