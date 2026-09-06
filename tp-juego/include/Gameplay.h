@@ -26,12 +26,11 @@ class Gameplay : public Pantalla {
         std::vector<sf::FloatRect> vectorObjetosMapaHitbox;
         std::vector<sf::FloatRect> vectorhitboxZombies;
 
-        //sf::Texture texturaZombie;
         std::vector<Zombie> vectorZombies;
         GestorOleada oleada;
         
         ProyectilPool proyectiles;
-        
+
         // ------ MAPA
         ObjetoMapa elMapa;
 

@@ -26,9 +26,11 @@ void Gameplay::manejarEventos(const sf::Event&) {
 
 void Gameplay::actualizar(float deltaTime) {
 
-    sf::Vector2i mousePixel = sf::Mouse::getPosition(juego->getVentana());
-    sf::Vector2f posMouse = juego->getVentana().mapPixelToCoords(mousePixel, juego->getVista());
+    // mouse e input
+    input.actualizar(juego->getVentana());
+    sf::Vector2f posMouse = input.getPosicionMouseMundo(juego->getVentana(), juego->getVista());
     
+    // zombies
     oleada.actualizar(jugador.getPosicion(), deltaTime);
 
     for(auto& zombie : vectorZombies){
@@ -38,16 +40,20 @@ void Gameplay::actualizar(float deltaTime) {
     for(auto& zombie : vectorZombies){
         zombie.actualizar(deltaTime, jugador.getHitbox(), vectorObjetosMapaHitbox, vectorhitboxZombies);
     }
-
-
     
+    //proyectiles
     proyectiles.actualizar(deltaTime);
+    // jugador
     jugador.actualizar(deltaTime, posMouse, vectorObjetosMapaHitbox, proyectiles);
+    
     
     actualizarVista();
     
+    // resolucion de interacciones
     resolverColisionesJugadorZombies();
     resolverColisionesProyectilZombies();
+
+    // limpieza vector zombies
     vectorZombies.erase(std::remove_if(vectorZombies.begin(), vectorZombies.end(), [](const Zombie &z) { return !z.estaVivo(); }), vectorZombies.end());
     
 }

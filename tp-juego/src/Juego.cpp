@@ -4,6 +4,9 @@
 Juego::Juego() : ventana(sf::VideoMode({1280,720}), "The Last Squad") {
     pantallaActual = new MenuPrincipal(this);
 
+    //SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
+    //SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+
     sf::VideoMode modoEscritorio = sf::VideoMode::getDesktopMode();
     ventana.create(modoEscritorio, "The Last Squad", sf::State::Fullscreen);
     //ventana.setMouseCursorVisible(false); // Ocultar el cursor estándar para usar la mira personalizada

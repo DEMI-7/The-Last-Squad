@@ -16,5 +16,7 @@ class MenuPrincipal : public Pantalla {
 
         sf::Texture texturaFondoMenu;
         sf::Sprite spriteFondoMenu;
-        Boton botonJugar;
+
+        std::vector<Boton> vectorBotones;
+        int botonSeleccionado = 0;
 };

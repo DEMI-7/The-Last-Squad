@@ -1,11 +1,14 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Input.h"
 
 class Juego;
 
 class Pantalla {
     protected:
         Juego* juego;
+
+        Input input;
 
     public:
         Pantalla(Juego* juego) : juego(juego) {}

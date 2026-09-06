@@ -16,11 +16,17 @@ class Boton : public ObjetoGrafico {
 
         Boton();
 
+        Boton(int tipo, int id, std::string direccionImagen);
+
+        void actualizar(float deltaTime, const sf::RenderWindow& ventana, int seleccion);
+
         void actualizar(float deltaTime, const sf::RenderWindow& ventana);
 
         bool estaPresionado();
 
         bool estaHover(const sf::RenderWindow& ventana);
+
+        void activarHover();
 
         bool fueClickeado();
 

@@ -43,7 +43,7 @@ void MenuSeleccionPersonaje::manejarEventos(const sf::Event&) {
 
 void MenuSeleccionPersonaje::actualizar(float deltaTime) {
     for (auto& boton : vectorBotones) {
-        boton.actualizar(deltaTime, juego->getVentana());
+        boton.actualizar(deltaTime, juego->getVentana(), 0);
     }
 }
 

@@ -1,10 +1,22 @@
-#include"../include/Boton.h"
+#include "../include/Boton.h"
+#include <iostream>
 
 Boton::Boton(){
     id = -1;
     hover = false;
     presionado = false;
     mouseEstabaPresionado = false;
+}
+
+Boton::Boton(int tipo, int id, std::string direccionImagen){
+    this->id = id;
+    hover = false;
+    presionado = false;
+    mouseEstabaPresionado = false;
+
+    if (tipo == 1){
+        cargarTextura(direccionImagen);
+    }
 }
 
 bool Boton::estaHover(const sf::RenderWindow& ventana) {
@@ -28,7 +40,24 @@ bool Boton::estaPresionado() {
     return false;
 }
 
-void Boton::actualizar(float deltaTime, const sf::RenderWindow& ventana) {
+// Teclado/joystik
+void Boton::actualizar(float deltaTime, const sf::RenderWindow& ventana, int seleccion) { 
+    if (seleccion == this->id) {
+        hover = true;
+    }
+    else {
+        hover = false;
+    }
+
+    if(getEstaHover()) {
+        seleccionarSprite(1, 0); // Cambiar a la segunda columna del sprite (
+    } else {
+        seleccionarSprite(0, 0); // Cambiar a la primera columna del sprite (normal)
+    }
+}
+
+// Mouse
+void Boton::actualizar(float deltaTime, const sf::RenderWindow& ventana) { 
     estaHover(ventana);
     estaPresionado();
 
